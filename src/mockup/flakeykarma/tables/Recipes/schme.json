@@ -1,0 +1,30 @@
+{
+	"recipe":{
+		"guid":"string",
+		"author":"string",
+		"timedate_added":"timedate",
+		"name":"string",
+		"ingredients":"object.ingredient",
+		"steps":"object.step",
+		"notes":"object.note"
+	},
+	"note":{
+		"guid":"string",
+		"name":"string",
+		"body":"string",
+		"timedate_set":"timedate"
+	},
+	"step":{
+		"guid":"string",
+		"description":"string",
+		"timing":"integer",
+		"notes":"object.note"
+	},
+	"ingredient":{
+		"guid":"string",
+		"source":"string",
+		"name":"string",
+		"base_ingredients":"object.base_ingredient",
+		"percentage":"float"
+	}
+}

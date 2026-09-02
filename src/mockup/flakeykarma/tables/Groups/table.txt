@@ -1,0 +1,4 @@
+"Name","Description","GUID"
+"admin","Admin user","e9a4a61f-5d89-4251-bc6d-dfafa17d6ce1"
+"auditor","Read-only access","d1a23d8c-5593-4188-9d76-c24a3565f8b3"
+"user","Normal user access.","97fb0a83-b436-4e67-b043-3546ff308532"

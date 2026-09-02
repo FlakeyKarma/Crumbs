@@ -1,0 +1,4 @@
+Users - Users with access
+Groups - Groups associated
+Recipes - Recipes presented
+Themes - Theme details
