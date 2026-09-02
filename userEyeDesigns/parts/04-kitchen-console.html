@@ -1,0 +1,270 @@
+<style>
+/* ---------- 4. Kitchen Console ---------- */
+#console .screen,#console .desk{
+  --bg:#101315;--panel:#171B1E;--panel2:#1F2529;--line:#2A3136;--fg:#ECEEF0;--fg2:#8B949C;--amber:#F2A93B;--amber-ink:#1A1206;--ok:#6DBE7A;
+  background:var(--bg);color:var(--fg);font-family:'Barlow Semi Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.35}
+#console .k-mono{font-family:'JetBrains Mono','SFMono-Regular',Menlo,monospace;font-variant-numeric:tabular-nums}
+#console .k-lab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg2);font-weight:600}
+#console .k-panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+#console .k-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:64px;padding:0 16px;border-bottom:1px solid var(--line)}
+#console .k-row .n{font-size:18px;font-weight:600}
+#console .k-row .s{color:var(--fg2);font-size:13px;margin-top:1px}
+#console .k-chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:6px;background:var(--panel2);color:var(--fg);font-size:12.5px;font-weight:600}
+#console .k-chip.amber{background:var(--amber);color:var(--amber-ink)}
+#console .k-chip.ok{background:rgba(109,190,122,.15);color:var(--ok)}
+#console .k-btn{height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:.02em;text-transform:uppercase;background:var(--amber);color:var(--amber-ink)}
+#console .k-btn.ghost{background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
+#console .k-ing{display:grid;grid-template-columns:1fr 84px 64px;gap:12px;align-items:center;min-height:48px;padding:0 16px;border-bottom:1px solid var(--line);font-size:15px}
+#console .k-ing .g{text-align:right;font-size:15px}
+#console .k-ing .p{text-align:right;color:var(--amber);font-size:13px}
+#console .k-ing small{display:block;color:var(--fg2);font-size:12px}
+#console .k-step{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:start;padding:14px 16px;border-bottom:1px solid var(--line)}
+#console .k-step .no{width:32px;height:32px;border-radius:8px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+#console .k-step.on .no{background:var(--amber);color:var(--amber-ink)}
+#console .k-step.done .no{background:rgba(109,190,122,.15);color:var(--ok)}
+#console .k-step.done span{color:var(--fg2);text-decoration:line-through}
+#console .k-seg{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px}
+#console .k-seg span{flex:1;height:36px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:13px;font-weight:600;color:var(--fg2)}
+#console .k-seg span.on{background:var(--panel2);color:var(--fg)}
+#console .k-in{height:48px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:16px}
+#console .k-in.ph{color:var(--fg2)}
+#console .k-field{display:flex;flex-direction:column;gap:6px}
+#console .k-side{width:88px;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:28px 0;gap:8px}
+#console .k-side .t{width:56px;height:56px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--fg2);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+#console .k-side .t.on{background:var(--panel2);color:var(--fg)}
+#console .k-timer{font-size:64px;line-height:1;font-weight:500;letter-spacing:-.02em}
+#console .k-bar{height:6px;border-radius:3px;background:var(--panel2);overflow:hidden}
+#console .k-bar i{display:block;height:100%;background:var(--amber);border-radius:3px}
+</style>
+
+<section class="sec" id="console">
+  <div class="sec-head">
+    <div>
+      <div class="num">Direction 4</div>
+      <h2>Kitchen Console</h2>
+      <div class="swatches"><i style="background:#101315"></i><i style="background:#1F2529"></i><i style="background:#8B949C"></i><i style="background:#F2A93B"></i><i style="background:#6DBE7A"></i></div>
+      <div class="type">Barlow Semi Condensed, JetBrains Mono for weights, timers and percentages</div>
+    </div>
+    <div><h3>Why</h3><p>Built for a phone propped on the counter: dark ground, one amber accent, 56px controls that work with wet hands. Uses the data model directly: every step's timing becomes a timer, every ingredient's percentage becomes a scaling column.</p></div>
+    <div><h3>Tradeoff</h3><p>Reads as equipment, not a cookbook. Dark-only tone can feel severe for browsing on the couch, and the density asks for careful typography to stay legible.</p></div>
+  </div>
+
+  <div class="row-label">Phone <span>390 × 844</span></div>
+  <div class="phones">
+
+    <!-- 4 / Browse -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:58px 18px 0;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:22px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Crumbs</span><span class="k-mono" style="font-size:13px;color:var(--fg2)">12 recipes</span></div>
+        <div class="k-in ph"><span style="display:flex;gap:10px;align-items:center"><svg class="ic" style="font-size:18px"><use href="#i-search"/></svg>Search</span><span class="k-mono" style="font-size:12px">⌘K</span></div>
+        <div class="k-seg"><span class="on">All</span><span>Breakfast</span><span>Mains</span><span>Baking</span></div>
+        <div class="k-panel" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-color:var(--amber)">
+          <div><div class="k-lab" style="color:var(--amber)">Cooking now</div><div style="font-size:18px;font-weight:600;margin-top:2px">Overnight Focaccia</div><div style="color:var(--fg2);font-size:13px">Step 4 of 6 · room-temp rest</div></div>
+          <div class="k-mono" style="font-size:24px;font-weight:500">47:12</div>
+        </div>
+      </div>
+      <div style="padding:16px 18px 0;flex:1;overflow:hidden">
+        <div class="k-panel" style="overflow:hidden">
+          <div class="k-row"><div><div class="n">Grandma's Skillet Cornbread</div><div class="s">Baking · 9 ingredients · 3 notes</div></div><span class="k-chip k-mono">55m</span></div>
+          <div class="k-row"><div><div class="n">Green Eggs and Ham</div><div class="s">Breakfast · 6 ingredients</div></div><span class="k-chip k-mono">20m</span></div>
+          <div class="k-row"><div><div class="n">Lemon Olive Oil Cake</div><div class="s">Baking · 10 ingredients · 1 note</div></div><span class="k-chip k-mono">1h10</span></div>
+          <div class="k-row"><div><div class="n">Miso Butter Salmon</div><div class="s">Mains · 7 ingredients</div></div><span class="k-chip k-mono">25m</span></div>
+          <div class="k-row"><div><div class="n">Shakshuka</div><div class="s">Breakfast · 11 ingredients</div></div><span class="k-chip k-mono">30m</span></div>
+          <div class="k-row"><div><div class="n">Weeknight Red Lentil Dal</div><div class="s">Mains · 12 ingredients · 1 note</div></div><span class="k-chip k-mono">40m</span></div>
+          <div class="k-row" style="border-bottom:0"><div><div class="n">Charred Broccoli, Chili Crisp</div><div class="s">Sides · 6 ingredients</div></div><span class="k-chip k-mono">18m</span></div>
+        </div>
+      </div>
+      <div style="padding:12px 18px 30px"><div class="k-btn"><svg class="ic" style="font-size:20px"><use href="#i-plus"/></svg>New recipe</div></div>
+    </div></div><div class="cap">Browse. A live "cooking now" strip stays pinned above the list.</div></div>
+
+    <!-- 4 / Detail -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:58px 18px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="display:flex;gap:6px;align-items:center;color:var(--fg2);font-size:14px"><svg class="ic" style="font-size:18px"><use href="#i-back"/></svg>Library</span><span class="k-chip"><svg class="ic" style="font-size:14px"><use href="#i-scale"/></svg>Scale ×1.0</span></div>
+        <div>
+          <div class="k-lab">Baking · 7 ingredients · 6 steps</div>
+          <div style="font-size:30px;font-weight:700;line-height:1.05;margin-top:4px">Overnight Focaccia</div>
+          <div style="color:var(--fg2);font-size:13px;margin-top:4px">flakeykarma · 14 Aug 2026 · <span class="k-mono">18h 15m</span> total</div>
+        </div>
+        <div class="k-seg"><span class="on">Ingredients</span><span>Steps</span><span>Notes · 2</span></div>
+      </div>
+      <div style="padding:14px 18px 0;flex:1;overflow:hidden">
+        <div class="k-panel" style="overflow:hidden">
+          <div class="k-ing" style="min-height:36px;border-color:var(--line)"><span class="k-lab">Ingredient</span><span class="k-lab" style="text-align:right">Grams</span><span class="k-lab" style="text-align:right">Baker's</span></div>
+          <div class="k-ing"><span>Bread flour<small>King Arthur</small></span><span class="k-mono g">500</span><span class="k-mono p">100%</span></div>
+          <div class="k-ing"><span>Water<small>90°F</small></span><span class="k-mono g">400</span><span class="k-mono p">80%</span></div>
+          <div class="k-ing"><span>Salt<small>Diamond Crystal</small></span><span class="k-mono g">11</span><span class="k-mono p">2.2%</span></div>
+          <div class="k-ing"><span>Instant yeast<small>SAF Red</small></span><span class="k-mono g">2</span><span class="k-mono p">0.4%</span></div>
+          <div class="k-ing"><span>Olive oil<small>California Olive Ranch</small></span><span class="k-mono g">30</span><span class="k-mono p">6%</span></div>
+          <div class="k-ing"><span>Rosemary<small>fresh, for the top</small></span><span class="k-mono g">—</span><span class="k-mono p"></span></div>
+          <div class="k-ing" style="border-bottom:0"><span>Flaky salt<small>Maldon, for the top</small></span><span class="k-mono g">—</span><span class="k-mono p"></span></div>
+        </div>
+        <div class="k-panel" style="margin-top:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+          <div><div class="k-lab">Latest note · 20 Aug</div><div style="font-size:14px;margin-top:3px">Metal 9×13 browns better than glass.</div></div>
+          <svg class="ic" style="font-size:18px;color:var(--fg2)"><use href="#i-chevron"/></svg>
+        </div>
+      </div>
+      <div style="padding:12px 18px 30px;display:flex;gap:10px"><div class="k-btn ghost" style="width:56px;flex:none"><svg class="ic" style="font-size:20px"><use href="#i-more"/></svg></div><div class="k-btn" style="flex:1"><svg class="ic" style="font-size:20px"><use href="#i-play"/></svg>Start cooking</div></div>
+    </div></div><div class="cap">Detail. Grams and baker's percentage columns; scaling changes the grams, never the ratios.</div></div>
+
+    <!-- 4 / Add-Edit -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:58px 18px 0;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px"><span style="color:var(--fg2)">Cancel</span><span class="k-lab" style="color:var(--fg)">Edit recipe</span><span style="color:var(--amber);font-weight:700">Save</span></div>
+        <div class="k-field"><span class="k-lab">Name</span><div class="k-in" style="font-size:20px;font-weight:600;height:56px">Overnight Focaccia</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="k-field"><span class="k-lab">Author</span><div class="k-in">flakeykarma</div></div>
+          <div class="k-field"><span class="k-lab">Category</span><div class="k-in">Baking<svg class="ic" style="font-size:16px;transform:rotate(90deg);color:var(--fg2)"><use href="#i-chevron"/></svg></div></div>
+        </div>
+      </div>
+      <div style="padding:16px 18px 0;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:16px">
+        <div class="k-field"><div style="display:flex;justify-content:space-between"><span class="k-lab">Ingredients</span><span class="k-lab" style="color:var(--amber)">% of flour, auto</span></div>
+          <div class="k-panel" style="overflow:hidden">
+            <div class="k-ing" style="grid-template-columns:1fr 72px 56px 24px"><span>Bread flour<small>King Arthur</small></span><span class="k-mono g">500</span><span class="k-mono p">100%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+            <div class="k-ing" style="grid-template-columns:1fr 72px 56px 24px"><span>Water<small>90°F</small></span><span class="k-mono g">400</span><span class="k-mono p">80%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+            <div class="k-ing" style="grid-template-columns:1fr 72px 56px 24px"><span>Salt<small>Diamond Crystal</small></span><span class="k-mono g">11</span><span class="k-mono p">2.2%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+            <div class="k-ing" style="grid-template-columns:1fr 72px 56px 24px;border-bottom:0;color:var(--fg2)"><span>Add ingredient</span><span class="k-mono g">g</span><span></span><svg class="ic" style="font-size:16px;color:var(--amber)"><use href="#i-plus"/></svg></div>
+          </div>
+        </div>
+        <div class="k-field"><span class="k-lab">Steps</span>
+          <div class="k-panel" style="overflow:hidden">
+            <div class="k-step"><span class="no">1</span><span>Mix flour, water, yeast and salt to a shaggy dough. Cover.</span><span class="k-chip k-mono"><svg class="ic" style="font-size:13px"><use href="#i-clock"/></svg>5m</span></div>
+            <div class="k-step"><span class="no">2</span><span>Four sets of stretch-and-folds, 30 minutes apart.</span><span class="k-chip k-mono"><svg class="ic" style="font-size:13px"><use href="#i-clock"/></svg>2h</span></div>
+            <div class="k-step"><span class="no">3</span><span>Cold ferment, covered, in the fridge.</span><span class="k-chip k-mono"><svg class="ic" style="font-size:13px"><use href="#i-clock"/></svg>12h</span></div>
+            <div class="k-step" style="border-bottom:0;color:var(--fg2)"><span class="no">4</span><span>Add step</span><span class="k-chip k-mono" style="color:var(--fg2)">timer</span></div>
+          </div>
+        </div>
+        <div class="k-field"><span class="k-lab">Share with group</span><div class="k-seg"><span class="on">user</span><span>auditor</span><span>admin</span></div></div>
+      </div>
+    </div></div><div class="cap">Add / edit. Weights in grams; the percentage column recomputes from the flour line.</div></div>
+  </div>
+
+  <div class="row-label">Desktop <span>1440 × 900</span></div>
+  <div class="desks">
+
+    <!-- 4 / Desktop library + cook pane -->
+    <div class="desk-slot"><div class="desk-wrap"><div class="desk">
+      <nav class="k-side">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--amber);color:var(--amber-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:16px">C</div>
+        <div class="t on"><svg class="ic" style="font-size:20px"><use href="#i-book"/></svg>Library</div>
+        <div class="t"><svg class="ic" style="font-size:20px"><use href="#i-flame"/></svg>Cook</div>
+        <div class="t"><svg class="ic" style="font-size:20px"><use href="#i-note"/></svg>Notes</div>
+        <div class="t"><svg class="ic" style="font-size:20px"><use href="#i-users"/></svg>Groups</div>
+        <div class="t" style="margin-top:auto"><svg class="ic" style="font-size:20px"><use href="#i-sun"/></svg>Theme</div>
+      </nav>
+      <main style="flex:1;display:grid;grid-template-columns:420px minmax(0,1fr);overflow:hidden">
+        <div style="border-right:1px solid var(--line);padding:28px 24px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:20px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Library</span><span class="k-chip"><svg class="ic" style="font-size:14px"><use href="#i-plus"/></svg>New</span></div>
+          <div class="k-in ph" style="height:44px"><span style="display:flex;gap:10px;align-items:center"><svg class="ic" style="font-size:18px"><use href="#i-search"/></svg>Search</span><span class="k-mono" style="font-size:12px">⌘K</span></div>
+          <div class="k-seg"><span class="on">All</span><span>Breakfast</span><span>Mains</span><span>Baking</span><span>Sides</span></div>
+          <div class="k-panel" style="overflow:hidden">
+            <div class="k-row"><div><div class="n">Grandma's Skillet Cornbread</div><div class="s">Baking · 9 ingredients · 3 notes</div></div><span class="k-chip k-mono">55m</span></div>
+            <div class="k-row"><div><div class="n">Green Eggs and Ham</div><div class="s">Breakfast · 6 ingredients</div></div><span class="k-chip k-mono">20m</span></div>
+            <div class="k-row"><div><div class="n">Lemon Olive Oil Cake</div><div class="s">Baking · 10 ingredients · 1 note</div></div><span class="k-chip k-mono">1h10</span></div>
+            <div class="k-row"><div><div class="n">Miso Butter Salmon</div><div class="s">Mains · 7 ingredients</div></div><span class="k-chip k-mono">25m</span></div>
+            <div class="k-row" style="background:var(--panel2)"><div><div class="n">Overnight Focaccia</div><div class="s">Baking · 7 ingredients · 2 notes</div></div><span class="k-chip amber k-mono">cooking</span></div>
+            <div class="k-row"><div><div class="n">Shakshuka</div><div class="s">Breakfast · 11 ingredients</div></div><span class="k-chip k-mono">30m</span></div>
+            <div class="k-row"><div><div class="n">Weeknight Red Lentil Dal</div><div class="s">Mains · 12 ingredients · 1 note</div></div><span class="k-chip k-mono">40m</span></div>
+            <div class="k-row"><div><div class="n">Charred Broccoli, Chili Crisp</div><div class="s">Sides · 6 ingredients</div></div><span class="k-chip k-mono">18m</span></div>
+            <div class="k-row" style="border-bottom:0"><div><div class="n">Brown Butter Rice Krispies</div><div class="s">Baking · 5 ingredients</div></div><span class="k-chip k-mono">15m</span></div>
+          </div>
+        </div>
+        <div style="padding:28px 36px;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:28px;overflow:hidden">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div><div class="k-lab">Baking · 7 ingredients · 6 steps · <span class="k-mono">18h 15m</span></div><div style="font-size:40px;font-weight:700;line-height:1;margin-top:6px">Overnight Focaccia</div><div style="color:var(--fg2);font-size:14px;margin-top:6px">flakeykarma · 14 Aug 2026</div></div>
+              <div style="display:flex;gap:10px"><span class="k-chip" style="height:40px;padding:0 14px"><svg class="ic" style="font-size:16px"><use href="#i-scale"/></svg>Scale ×1.0</span><span class="k-chip" style="height:40px;padding:0 14px">Edit</span></div>
+            </div>
+            <div class="k-panel" style="padding:24px;display:flex;justify-content:space-between;align-items:center;border-color:var(--amber)">
+              <div><div class="k-lab" style="color:var(--amber)">Step 4 of 6 · running</div><div style="font-size:22px;font-weight:600;margin-top:6px;max-width:420px">Turn into an oiled 9×13 pan, dimple, rest at room temperature.</div><div class="k-bar" style="width:420px;margin-top:14px"><i style="width:48%"></i></div></div>
+              <div style="text-align:right"><div class="k-mono k-timer">47:12</div><div class="k-lab" style="margin-top:6px">of 90:00</div></div>
+            </div>
+            <div class="k-panel" style="overflow:hidden">
+              <div class="k-step done"><span class="no"><svg class="ic" style="font-size:16px"><use href="#i-check"/></svg></span><span>Mix flour, water, yeast and salt to a shaggy dough. Cover.</span><span class="k-chip ok k-mono">5m</span></div>
+              <div class="k-step done"><span class="no"><svg class="ic" style="font-size:16px"><use href="#i-check"/></svg></span><span>Four sets of stretch-and-folds, 30 minutes apart.</span><span class="k-chip ok k-mono">2h</span></div>
+              <div class="k-step done"><span class="no"><svg class="ic" style="font-size:16px"><use href="#i-check"/></svg></span><span>Cold ferment, covered, in the fridge.</span><span class="k-chip ok k-mono">12h</span></div>
+              <div class="k-step on"><span class="no">4</span><span>Turn into an oiled 9×13 pan, dimple, rest at room temperature.</span><span class="k-chip amber k-mono">90m</span></div>
+              <div class="k-step"><span class="no">5</span><span>Bake at 450°F until deep gold.</span><span class="k-chip k-mono">25m</span></div>
+              <div class="k-step" style="border-bottom:0"><span class="no">6</span><span>Cool on a rack before cutting.</span><span class="k-chip k-mono">15m</span></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div class="k-panel" style="overflow:hidden">
+              <div class="k-ing" style="min-height:40px"><span class="k-lab">Ingredient</span><span class="k-lab" style="text-align:right">Grams</span><span class="k-lab" style="text-align:right">Baker's</span></div>
+              <div class="k-ing"><span>Bread flour<small>King Arthur</small></span><span class="k-mono g">500</span><span class="k-mono p">100%</span></div>
+              <div class="k-ing"><span>Water<small>90°F</small></span><span class="k-mono g">400</span><span class="k-mono p">80%</span></div>
+              <div class="k-ing"><span>Salt<small>Diamond Crystal</small></span><span class="k-mono g">11</span><span class="k-mono p">2.2%</span></div>
+              <div class="k-ing"><span>Instant yeast<small>SAF Red</small></span><span class="k-mono g">2</span><span class="k-mono p">0.4%</span></div>
+              <div class="k-ing"><span>Olive oil<small>California Olive Ranch</small></span><span class="k-mono g">30</span><span class="k-mono p">6%</span></div>
+              <div class="k-ing"><span>Rosemary<small>fresh</small></span><span class="k-mono g">—</span><span class="k-mono p"></span></div>
+              <div class="k-ing" style="border-bottom:0"><span>Flaky salt<small>Maldon</small></span><span class="k-mono g">—</span><span class="k-mono p"></span></div>
+            </div>
+            <div class="k-panel" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;justify-content:space-between"><span class="k-lab">Notes</span><span class="k-mono" style="font-size:12px;color:var(--fg2)">2</span></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px"><b>Hydration</b><span class="k-mono" style="color:var(--fg2);font-size:12px">14 Aug</span></div><div style="color:var(--fg2);font-size:14px;margin-top:2px">80% is the ceiling for this flour. 85% pooled.</div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px"><b>Pan</b><span class="k-mono" style="color:var(--fg2);font-size:12px">20 Aug</span></div><div style="color:var(--fg2);font-size:14px;margin-top:2px">Metal 9×13 browns better than glass.</div></div>
+              <div class="k-in ph" style="height:44px;font-size:14px">Add a note while it rests…</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div></div><div class="cap">Library and cook pane. The running step and its timer take the top; ingredients and notes stay in reach on the right.</div></div>
+
+    <!-- 4 / Desktop add-edit -->
+    <div class="desk-slot"><div class="desk-wrap"><div class="desk">
+      <nav class="k-side">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--amber);color:var(--amber-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:16px">C</div>
+        <div class="t on"><svg class="ic" style="font-size:20px"><use href="#i-book"/></svg>Library</div>
+        <div class="t"><svg class="ic" style="font-size:20px"><use href="#i-flame"/></svg>Cook</div>
+        <div class="t"><svg class="ic" style="font-size:20px"><use href="#i-note"/></svg>Notes</div>
+        <div class="t"><svg class="ic" style="font-size:20px"><use href="#i-users"/></svg>Groups</div>
+      </nav>
+      <main style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:24px 36px;border-bottom:1px solid var(--line)">
+          <div style="display:flex;gap:16px;align-items:center"><span class="k-lab">Library / Edit</span><span style="font-size:20px;font-weight:700">Overnight Focaccia</span><span class="k-chip ok">Saved 2 min ago</span></div>
+          <div style="display:flex;gap:10px"><div class="k-btn ghost" style="height:44px;padding:0 18px;font-size:14px">Discard</div><div class="k-btn" style="height:44px;padding:0 22px;font-size:14px">Save</div></div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;padding:28px 36px;overflow:hidden">
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px">
+              <div class="k-field"><span class="k-lab">Name</span><div class="k-in" style="font-size:20px;font-weight:600;height:56px">Overnight Focaccia</div></div>
+              <div class="k-field"><span class="k-lab">Author</span><div class="k-in" style="height:56px">flakeykarma</div></div>
+              <div class="k-field"><span class="k-lab">Category</span><div class="k-in" style="height:56px">Baking<svg class="ic" style="font-size:16px;transform:rotate(90deg);color:var(--fg2)"><use href="#i-chevron"/></svg></div></div>
+            </div>
+            <div class="k-field">
+              <div style="display:flex;justify-content:space-between"><span class="k-lab">Ingredients</span><span class="k-lab" style="color:var(--amber)">Baker's % from the flour line · 1,143 g total</span></div>
+              <div class="k-panel" style="overflow:hidden">
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px;min-height:40px"><span></span><span class="k-lab">Ingredient</span><span class="k-lab">Source</span><span class="k-lab" style="text-align:right">Grams</span><span class="k-lab" style="text-align:right">%</span><span></span></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px"><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg><span>Bread flour <span class="k-chip amber" style="height:22px;font-size:11px;margin-left:6px">flour</span></span><span style="color:var(--fg2)">King Arthur</span><span class="k-mono g">500</span><span class="k-mono p">100%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-trash"/></svg></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px"><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg><span>Water</span><span style="color:var(--fg2)">90°F</span><span class="k-mono g">400</span><span class="k-mono p">80%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-trash"/></svg></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px"><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg><span>Salt</span><span style="color:var(--fg2)">Diamond Crystal</span><span class="k-mono g">11</span><span class="k-mono p">2.2%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-trash"/></svg></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px"><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg><span>Instant yeast</span><span style="color:var(--fg2)">SAF Red</span><span class="k-mono g">2</span><span class="k-mono p">0.4%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-trash"/></svg></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px"><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg><span>Olive oil</span><span style="color:var(--fg2)">California Olive Ranch</span><span class="k-mono g">30</span><span class="k-mono p">6%</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-trash"/></svg></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px"><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg><span>Rosemary</span><span style="color:var(--fg2)">fresh, for the top</span><span class="k-mono g">—</span><span class="k-mono p"></span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-trash"/></svg></div>
+                <div class="k-ing" style="grid-template-columns:24px 1fr 200px 90px 80px 32px;border-bottom:0;color:var(--fg2)"><span></span><span>Add ingredient</span><span></span><span class="k-mono g">g</span><span></span><svg class="ic" style="font-size:16px;color:var(--amber)"><use href="#i-plus"/></svg></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div class="k-field">
+              <div style="display:flex;justify-content:space-between"><span class="k-lab">Steps</span><span class="k-lab"><span class="k-mono">18h 15m</span> total</span></div>
+              <div class="k-panel" style="overflow:hidden">
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px"><span class="no">1</span><span>Mix flour, water, yeast and salt to a shaggy dough. Cover.</span><span class="k-in k-mono" style="height:36px;font-size:13px;justify-content:flex-end">5m</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px"><span class="no">2</span><span>Four sets of stretch-and-folds, 30 minutes apart.</span><span class="k-in k-mono" style="height:36px;font-size:13px;justify-content:flex-end">2h</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px"><span class="no">3</span><span>Cold ferment, covered, in the fridge.</span><span class="k-in k-mono" style="height:36px;font-size:13px;justify-content:flex-end">12h</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px"><span class="no">4</span><span>Turn into an oiled 9×13 pan, dimple, rest at room temperature.</span><span class="k-in k-mono" style="height:36px;font-size:13px;justify-content:flex-end">90m</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px"><span class="no">5</span><span>Bake at 450°F until deep gold.</span><span class="k-in k-mono" style="height:36px;font-size:13px;justify-content:flex-end">25m</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px"><span class="no">6</span><span>Cool on a rack before cutting.</span><span class="k-in k-mono" style="height:36px;font-size:13px;justify-content:flex-end">15m</span><svg class="ic" style="font-size:16px;color:var(--fg2)"><use href="#i-drag"/></svg></div>
+                <div class="k-step" style="grid-template-columns:40px 1fr 96px 24px;border-bottom:0;color:var(--fg2)"><span class="no">7</span><span>Add step</span><span></span><svg class="ic" style="font-size:16px;color:var(--amber)"><use href="#i-plus"/></svg></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="k-field"><span class="k-lab">Photo</span><div class="photo" style="height:120px;border-radius:10px;color:#8B949C;border:1px dashed var(--line)"></div></div>
+              <div class="k-field"><span class="k-lab">Share with group</span><div class="k-seg" style="flex-direction:column;height:120px"><span class="on">user</span><span>auditor</span><span>admin</span></div></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div></div><div class="cap">Add / edit. Tag one ingredient as the flour and every percentage follows; step timings sum to the total.</div></div>
+  </div>
+</section>

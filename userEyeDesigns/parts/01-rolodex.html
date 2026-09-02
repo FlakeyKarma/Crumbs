@@ -1,0 +1,292 @@
+<style>
+/* ---------- 1. Rolodex (tokens lifted from the existing Recipe Rolodex canvas) ---------- */
+#rolodex .screen,#rolodex .desk{
+  --paper:#F5EAD6;--card:#FBF3E2;--cardLine:rgba(58,44,34,.09);--ink:#3A2C22;--inkSoft:#7A6A57;
+  --rust:#A6522E;--rustDeep:#8B4023;--green:#4E6E4E;--tapePink:#E8B4B8;--tapeSage:#B7C9A8;--tapeButter:#EBD79A;
+  --ring:#C9A66B;--shadow:rgba(58,44,34,.28);
+  background:var(--paper);color:var(--ink);font-family:'Quicksand','Avenir Next','Trebuchet MS',sans-serif;font-size:14px;line-height:1.4}
+#rolodex .r-title{font-family:'Cormorant','Georgia',serif;font-style:italic;font-weight:600;color:var(--rustDeep)}
+#rolodex .r-hand{font-family:'Caveat','Bradley Hand','Segoe Print',cursive;font-weight:500}
+#rolodex .r-pill{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:999px;padding:10px 14px;box-shadow:0 1px 2px var(--shadow);color:var(--inkSoft)}
+#rolodex .r-chips{display:flex;gap:8px;overflow:hidden}
+#rolodex .r-chip{background:var(--card);color:var(--ink);font-weight:500;font-size:12px;padding:6px 13px;border-radius:999px;flex:none;box-shadow:0 1px 2px var(--shadow)}
+#rolodex .r-chip.on{background:var(--rust);color:#fff;font-weight:600}
+#rolodex .r-card{position:relative;background:var(--card);border-radius:16px;box-shadow:0 4px 8px var(--shadow),0 16px 30px var(--shadow);
+  background-image:repeating-linear-gradient(to bottom,transparent,transparent 25px,var(--cardLine) 25px,var(--cardLine) 26px)}
+#rolodex .r-card.flat{box-shadow:0 2px 6px var(--shadow)}
+#rolodex .r-tape{position:absolute;width:64px;height:18px;opacity:.9;transform:rotate(-4deg);box-shadow:0 1px 1px rgba(0,0,0,.08)}
+#rolodex .r-toggle{width:44px;height:26px;border-radius:14px;background:var(--card);display:flex;align-items:center;padding:3px;box-shadow:inset 0 1px 2px var(--shadow)}
+#rolodex .r-toggle i{width:20px;height:20px;border-radius:50%;background:var(--rust);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+#rolodex .r-meta{display:flex;gap:10px;font-size:12px;color:var(--inkSoft);align-items:center}
+#rolodex .r-meta i{width:3px;height:3px;border-radius:50%;background:var(--inkSoft)}
+#rolodex .r-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:999px;background:var(--rust);color:#fff;font-weight:600;font-size:15px;box-shadow:0 6px 14px var(--shadow)}
+#rolodex .r-btn.ghost{background:var(--card);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
+#rolodex .r-line{display:flex;justify-content:space-between;align-items:baseline;height:26px;font-size:13.5px}
+#rolodex .r-line b{font-weight:600}
+#rolodex .r-line small{color:var(--inkSoft);font-size:12px}
+#rolodex .r-step{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:6px 0;font-size:13.5px}
+#rolodex .r-step em{font-family:'Cormorant','Georgia',serif;font-style:italic;font-weight:700;color:var(--rust);font-size:18px;line-height:1}
+#rolodex .r-step small{display:flex;gap:4px;align-items:center;color:var(--inkSoft);font-size:12px;white-space:nowrap}
+#rolodex .r-field{display:flex;flex-direction:column;gap:4px}
+#rolodex .r-field label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--inkSoft);font-weight:600}
+#rolodex .r-input{height:40px;border-bottom:1.5px solid var(--ring);display:flex;align-items:center;font-size:15px;color:var(--ink);padding:0 2px}
+#rolodex .r-input.empty{color:var(--inkSoft)}
+#rolodex .r-input.box{border:1.5px dashed var(--ring);border-radius:10px;padding:0 12px;height:44px;justify-content:space-between}
+#rolodex .r-nav{display:flex;align-items:center;justify-content:space-between}
+#rolodex .r-iconbtn{width:40px;height:40px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px var(--shadow);font-size:18px;color:var(--ink)}
+#rolodex .r-side{width:300px;background:var(--paper);border-right:1px solid var(--cardLine);display:flex;flex-direction:column;padding:28px 22px;gap:18px}
+#rolodex .r-side .item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:12px;font-size:14px}
+#rolodex .r-side .item.on{background:var(--card);box-shadow:0 1px 2px var(--shadow);font-weight:600}
+#rolodex .r-side .divider{font-family:'Cormorant','Georgia',serif;font-style:italic;font-size:15px;color:var(--rust);padding:12px 12px 2px;border-bottom:1px solid var(--cardLine)}
+#rolodex .r-group{display:flex;gap:8px;flex-wrap:wrap}
+#rolodex .r-group span{border:1.5px solid var(--ring);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;display:flex;gap:6px;align-items:center}
+#rolodex .r-group span.on{background:var(--green);border-color:var(--green);color:#fff}
+</style>
+
+<section class="sec" id="rolodex">
+  <div class="sec-head">
+    <div>
+      <div class="num">Direction 1</div>
+      <h2>Rolodex</h2>
+      <div class="swatches"><i style="background:#F5EAD6"></i><i style="background:#FBF3E2"></i><i style="background:#A6522E"></i><i style="background:#4E6E4E"></i><i style="background:#3A2C22"></i></div>
+      <div class="type">Cormorant italic, Quicksand, Caveat for notes</div>
+    </div>
+    <div><h3>Why</h3><p>Carries the existing mockup forward. Every recipe is a ruled index card in a box, so the app feels like a family collection rather than a database. Notes live on the back of the card in handwriting.</p></div>
+    <div><h3>Tradeoff</h3><p>Skeuomorphic and low density. A card holds one recipe at a time, so the library is browsed by flipping rather than scanning, and long ingredient lists fight the card metaphor.</p></div>
+  </div>
+
+  <div class="row-label">Phone <span>390 × 844</span></div>
+  <div class="phones">
+
+    <!-- 1 / Browse -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:58px 20px 10px;display:flex;flex-direction:column;gap:10px">
+        <div class="r-nav"><span class="r-title" style="font-size:23px">The Recipe Box</span><div class="r-toggle"><i><svg class="ic"><use href="#i-sun"/></svg></i></div></div>
+        <div class="r-pill"><svg class="ic" style="font-size:15px"><use href="#i-search"/></svg><span>Search recipes, ingredients…</span></div>
+        <div class="r-chips"><span class="r-chip on">All</span><span class="r-chip">Breakfast</span><span class="r-chip">Mains</span><span class="r-chip">Baking</span><span class="r-chip">Sides</span></div>
+      </div>
+      <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:6px 20px 4px">
+        <div class="r-card flat" style="position:absolute;width:84%;height:76%;transform:rotate(-7deg) translateY(6px)"></div>
+        <div class="r-card flat" style="position:absolute;width:84%;height:76%;transform:rotate(5deg) translateY(4px)"></div>
+        <div class="r-card" style="width:84%;height:78%;overflow:hidden;display:flex;flex-direction:column">
+          <span class="r-tape" style="background:var(--tapeSage);left:-14px;top:14px"></span>
+          <span class="r-tape" style="background:var(--tapePink);right:-14px;top:14px;transform:rotate(6deg)"></span>
+          <div class="photo" style="height:150px;margin:26px 22px 0;border-radius:10px;color:#7A6A57"></div>
+          <div style="padding:18px 22px 0;display:flex;flex-direction:column;gap:6px">
+            <div class="r-title" style="font-size:24px;font-style:normal;line-height:1.1;color:var(--ink)">Grandma's Skillet Cornbread</div>
+            <div class="r-meta"><span>55 min</span><i></i><span>serves 8</span><i></i><span>Baking</span></div>
+            <p class="r-hand" style="margin:8px 0 0;font-size:17px;line-height:26px;color:var(--inkSoft)">Crisp buttery edges, tender middle. Baked in the cast iron skillet that's been in the family for decades.</p>
+          </div>
+          <div style="margin-top:auto;padding:0 22px 18px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--inkSoft)">
+            <svg class="ic" style="font-size:18px;color:var(--rust)"><use href="#i-heart"/></svg>
+            <span style="display:flex;gap:6px;align-items:center"><svg class="ic" style="font-size:14px"><use href="#i-note"/></svg>3 notes · flip for notes</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding:8px 20px 30px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--inkSoft)">Card 4 of 12</span>
+        <div class="r-btn" style="height:44px;padding:0 18px;font-size:14px"><svg class="ic" style="font-size:16px"><use href="#i-plus"/></svg>New card</div>
+      </div>
+    </div></div><div class="cap">Browse. Swipe through a deck of cards; filters are box dividers.</div></div>
+
+    <!-- 1 / Detail -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:58px 20px 8px" class="r-nav">
+        <div class="r-iconbtn"><svg class="ic"><use href="#i-back"/></svg></div>
+        <div style="display:flex;gap:2px;background:var(--card);border-radius:999px;padding:3px;box-shadow:inset 0 1px 2px var(--shadow);font-size:12px;font-weight:600">
+          <span style="background:var(--rust);color:#fff;border-radius:999px;padding:5px 14px">Front</span><span style="padding:5px 14px;color:var(--inkSoft)">Back · 3 notes</span>
+        </div>
+        <div class="r-iconbtn"><svg class="ic"><use href="#i-more"/></svg></div>
+      </div>
+      <div style="flex:1;padding:8px 18px 0">
+        <div class="r-card" style="height:100%;border-radius:16px 16px 0 0;padding:24px 22px 0;display:flex;flex-direction:column;gap:2px;overflow:hidden">
+          <span class="r-tape" style="background:var(--tapeButter);left:50%;margin-left:-32px;top:-8px;transform:rotate(-2deg)"></span>
+          <div class="r-title" style="font-size:26px;font-style:normal;color:var(--ink);line-height:1.1">Grandma's Skillet Cornbread</div>
+          <div class="r-meta" style="margin:4px 0 12px"><span>by flakeykarma</span><i></i><span>added 12 Mar 2026</span><i></i><span>55 min</span></div>
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);font-weight:700;height:26px;display:flex;align-items:center">Ingredients</div>
+          <div class="r-line"><span><b>1 ½ cups</b> yellow cornmeal <small>Bob's Red Mill</small></span><small>100%</small></div>
+          <div class="r-line"><span><b>½ cup</b> all-purpose flour <small>King Arthur</small></span><small>33%</small></div>
+          <div class="r-line"><span><b>1 ¼ cups</b> buttermilk</span><small>83%</small></div>
+          <div class="r-line"><span><b>2</b> eggs</span><small></small></div>
+          <div class="r-line"><span><b>6 tbsp</b> butter, melted</span><small></small></div>
+          <div class="r-line"><span><b>2 tbsp</b> honey</span><small></small></div>
+          <div class="r-line"><span><b>1 tsp</b> baking powder · <b>½ tsp</b> soda · <b>1 tsp</b> salt</span><small></small></div>
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);font-weight:700;height:26px;display:flex;align-items:center;margin-top:10px">Steps</div>
+          <div class="r-step"><em>1</em><span>Heat the oven to 425°F with the 10-inch cast iron skillet inside.</span><small><svg class="ic"><use href="#i-clock"/></svg>15 min</small></div>
+          <div class="r-step"><em>2</em><span>Whisk cornmeal, flour, baking powder, soda and salt.</span><small><svg class="ic"><use href="#i-clock"/></svg>2 min</small></div>
+          <div class="r-step"><em>3</em><span>Whisk buttermilk, eggs and honey. Fold into the dry mix until just combined.</span><small><svg class="ic"><use href="#i-clock"/></svg>3 min</small></div>
+          <div class="r-step"><em>4</em><span>Pull the skillet, swirl in the butter, pour the batter into the sizzling pan.</span><small><svg class="ic"><use href="#i-clock"/></svg>1 min</small></div>
+          <div class="r-step"><em>5</em><span>Bake until the edges pull away and the top is golden.</span><small><svg class="ic"><use href="#i-clock"/></svg>22 min</small></div>
+          <div class="r-step"><em>6</em><span>Rest in the pan, then cut into wedges.</span><small><svg class="ic"><use href="#i-clock"/></svg>10 min</small></div>
+        </div>
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 30px;background:linear-gradient(to top,var(--paper) 70%,transparent)">
+        <div class="r-btn"><svg class="ic" style="font-size:16px"><use href="#i-play"/></svg>Start cooking</div>
+      </div>
+    </div></div><div class="cap">Detail. Front of the card; the back tab flips to dated handwritten notes.</div></div>
+
+    <!-- 1 / Add-Edit -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:58px 20px 8px" class="r-nav">
+        <div class="r-iconbtn"><svg class="ic"><use href="#i-x"/></svg></div>
+        <span class="r-title" style="font-size:20px">New card</span>
+        <span style="font-weight:700;color:var(--rust);font-size:14px;width:40px;text-align:right">Save</span>
+      </div>
+      <div style="flex:1;padding:8px 18px 0">
+        <div class="r-card" style="height:100%;border-radius:16px 16px 0 0;padding:26px 22px 0;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <span class="r-tape" style="background:var(--tapePink);left:22px;top:-8px"></span>
+          <div class="r-field"><label>Recipe name</label><div class="r-input r-title" style="font-size:22px;font-style:normal;color:var(--ink)">Overnight Focaccia</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="r-field"><label>Author</label><div class="r-input">flakeykarma</div></div>
+            <div class="r-field"><label>Category</label><div class="r-input">Baking</div></div>
+          </div>
+          <div class="r-input box" style="height:74px;color:var(--inkSoft)"><span style="display:flex;gap:8px;align-items:center"><svg class="ic" style="font-size:18px"><use href="#i-camera"/></svg>Add a photo to the card</span><span class="r-tape" style="position:static;background:var(--tapeSage);width:44px;transform:rotate(8deg)"></span></div>
+          <div class="r-field"><label>Ingredients</label>
+            <div class="r-line"><span><b>500 g</b> bread flour <small>King Arthur</small></span><small>100%</small></div>
+            <div class="r-line"><span><b>400 g</b> water</span><small>80%</small></div>
+            <div class="r-line"><span><b>11 g</b> salt</span><small>2.2%</small></div>
+            <div class="r-line" style="color:var(--inkSoft)"><span>Add ingredient, amount, source…</span><svg class="ic" style="font-size:16px"><use href="#i-plus"/></svg></div>
+          </div>
+          <div class="r-field"><label>Steps</label>
+            <div class="r-step"><em>1</em><span>Mix flour, water, yeast and salt to a shaggy dough.</span><small><svg class="ic"><use href="#i-clock"/></svg>5 min</small></div>
+            <div class="r-step"><em>2</em><span>Four sets of stretch-and-folds, 30 minutes apart.</span><small><svg class="ic"><use href="#i-clock"/></svg>120 min</small></div>
+            <div class="r-step" style="color:var(--inkSoft)"><em style="color:var(--ring)">3</em><span>Describe the next step…</span><small>timing</small></div>
+          </div>
+          <div class="r-field"><label>Share with group</label><div class="r-group"><span class="on"><svg class="ic"><use href="#i-check"/></svg>user</span><span>auditor</span><span>admin</span></div></div>
+        </div>
+      </div>
+    </div></div><div class="cap">Add / edit. Filling in a blank ruled card; percentages sit in the margin.</div></div>
+  </div>
+
+  <div class="row-label">Desktop <span>1440 × 900</span></div>
+  <div class="desks">
+
+    <!-- 1 / Desktop library + detail -->
+    <div class="desk-slot"><div class="desk-wrap"><div class="desk">
+      <aside class="r-side">
+        <div class="r-title" style="font-size:28px">The Recipe Box</div>
+        <div class="r-pill"><svg class="ic" style="font-size:15px"><use href="#i-search"/></svg><span>Search recipes, ingredients…</span></div>
+        <div class="r-chips"><span class="r-chip on">All</span><span class="r-chip">Breakfast</span><span class="r-chip">Mains</span><span class="r-chip">Baking</span></div>
+        <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+          <div class="divider">A – G</div>
+          <div class="item"><span>Green Eggs and Ham</span><small style="color:var(--inkSoft)">20 min</small></div>
+          <div class="item on"><span>Grandma's Skillet Cornbread</span><small style="color:var(--inkSoft)">55 min</small></div>
+          <div class="divider">H – O</div>
+          <div class="item"><span>Lemon Olive Oil Cake</span><small style="color:var(--inkSoft)">1 h 10</small></div>
+          <div class="item"><span>Miso Butter Salmon</span><small style="color:var(--inkSoft)">25 min</small></div>
+          <div class="item"><span>Overnight Focaccia</span><small style="color:var(--inkSoft)">18 h</small></div>
+          <div class="divider">P – Z</div>
+          <div class="item"><span>Shakshuka</span><small style="color:var(--inkSoft)">30 min</small></div>
+          <div class="item"><span>Weeknight Red Lentil Dal</span><small style="color:var(--inkSoft)">40 min</small></div>
+        </div>
+        <div class="r-btn"><svg class="ic" style="font-size:16px"><use href="#i-plus"/></svg>New card</div>
+      </aside>
+      <main style="flex:1;display:flex;gap:40px;padding:48px 56px;align-items:stretch">
+        <div class="r-card" style="flex:1.3;padding:40px 44px;display:flex;flex-direction:column;gap:4px;max-width:720px">
+          <span class="r-tape" style="background:var(--tapeButter);left:60px;top:-9px;width:80px"></span>
+          <span class="r-tape" style="background:var(--tapeSage);right:60px;top:-9px;width:80px;transform:rotate(5deg)"></span>
+          <div style="display:flex;gap:28px;align-items:flex-start">
+            <div style="flex:1">
+              <div class="r-title" style="font-size:38px;font-style:normal;color:var(--ink);line-height:1.05">Grandma's Skillet Cornbread</div>
+              <div class="r-meta" style="margin:10px 0 0;font-size:13px"><span>by flakeykarma</span><i></i><span>added 12 Mar 2026</span><i></i><span>55 min</span><i></i><span>serves 8</span></div>
+              <p class="r-hand" style="margin:14px 0 0;font-size:20px;line-height:26px;color:var(--inkSoft)">Crisp buttery edges, tender middle. Baked in the cast iron skillet that's been in the family for decades.</p>
+            </div>
+            <div class="photo" style="width:210px;height:156px;border-radius:12px;color:#7A6A57;flex:none"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1.25fr;gap:36px;margin-top:22px">
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);font-weight:700;height:26px;display:flex;align-items:center">Ingredients</div>
+              <div class="r-line"><span><b>1 ½ cups</b> cornmeal</span><small>100%</small></div>
+              <div class="r-line"><span><b>½ cup</b> flour</span><small>33%</small></div>
+              <div class="r-line"><span><b>1 ¼ cups</b> buttermilk</span><small>83%</small></div>
+              <div class="r-line"><span><b>2</b> eggs</span><small></small></div>
+              <div class="r-line"><span><b>6 tbsp</b> butter, melted</span><small></small></div>
+              <div class="r-line"><span><b>2 tbsp</b> honey</span><small></small></div>
+              <div class="r-line"><span><b>1 tsp</b> baking powder</span><small></small></div>
+              <div class="r-line"><span><b>½ tsp</b> baking soda</span><small></small></div>
+              <div class="r-line"><span><b>1 tsp</b> salt</span><small></small></div>
+            </div>
+            <div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);font-weight:700;height:26px;display:flex;align-items:center">Steps</div>
+              <div class="r-step"><em>1</em><span>Heat the oven to 425°F with the skillet inside.</span><small><svg class="ic"><use href="#i-clock"/></svg>15 min</small></div>
+              <div class="r-step"><em>2</em><span>Whisk the dry ingredients.</span><small><svg class="ic"><use href="#i-clock"/></svg>2 min</small></div>
+              <div class="r-step"><em>3</em><span>Whisk buttermilk, eggs, honey; fold into the dry mix.</span><small><svg class="ic"><use href="#i-clock"/></svg>3 min</small></div>
+              <div class="r-step"><em>4</em><span>Swirl butter in the hot skillet, pour in the batter.</span><small><svg class="ic"><use href="#i-clock"/></svg>1 min</small></div>
+              <div class="r-step"><em>5</em><span>Bake until golden and pulling from the edges.</span><small><svg class="ic"><use href="#i-clock"/></svg>22 min</small></div>
+              <div class="r-step"><em>6</em><span>Rest, then cut into wedges.</span><small><svg class="ic"><use href="#i-clock"/></svg>10 min</small></div>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;gap:12px;padding-top:24px">
+            <div class="r-btn" style="padding:0 24px"><svg class="ic" style="font-size:16px"><use href="#i-play"/></svg>Start cooking</div>
+            <div class="r-btn ghost" style="padding:0 20px">Edit card</div>
+          </div>
+        </div>
+        <div style="flex:.8;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="r-title" style="font-size:22px">Back of the card</span><span style="font-size:12px;color:var(--inkSoft)">3 notes</span></div>
+          <div class="r-card" style="padding:22px 24px;transform:rotate(-1deg)">
+            <span class="r-tape" style="background:var(--tapePink);left:20px;top:-8px"></span>
+            <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--green)"><span>Less sweet</span><span style="color:var(--inkSoft)">3 Mar</span></div>
+            <p class="r-hand" style="margin:6px 0 0;font-size:21px;line-height:26px">Used 2 tbsp less sugar, still plenty sweet.</p>
+          </div>
+          <div class="r-card" style="padding:22px 24px;transform:rotate(.8deg)">
+            <span class="r-tape" style="background:var(--tapeButter);right:20px;top:-8px;transform:rotate(5deg)"></span>
+            <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--green)"><span>Timing</span><span style="color:var(--inkSoft)">8 Mar</span></div>
+            <p class="r-hand" style="margin:6px 0 0;font-size:21px;line-height:26px">Needed 40 min at 375°, not 35. Check the middle with a toothpick.</p>
+          </div>
+          <div class="r-card" style="padding:22px 24px;transform:rotate(-.6deg)">
+            <span class="r-tape" style="background:var(--tapeSage);left:40px;top:-8px"></span>
+            <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--green)"><span>Thanksgiving</span><span style="color:var(--inkSoft)">12 Jan</span></div>
+            <p class="r-hand" style="margin:6px 0 0;font-size:21px;line-height:26px">Family loved it. Making again next year.</p>
+          </div>
+          <div class="r-btn ghost" style="height:44px"><svg class="ic" style="font-size:16px"><use href="#i-plus"/></svg>Add a note</div>
+        </div>
+      </main>
+    </div></div><div class="cap">Library and detail. The box is a sidebar with alphabetical dividers; the open card sits beside its notes.</div></div>
+
+    <!-- 1 / Desktop add-edit -->
+    <div class="desk-slot"><div class="desk-wrap"><div class="desk" style="flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:28px 56px;border-bottom:1px solid var(--cardLine)">
+        <div style="display:flex;align-items:center;gap:16px"><div class="r-iconbtn"><svg class="ic"><use href="#i-back"/></svg></div><span class="r-title" style="font-size:26px">Editing a card</span><span style="font-size:13px;color:var(--inkSoft)">Overnight Focaccia · last saved 2 min ago</span></div>
+        <div style="display:flex;gap:12px"><div class="r-btn ghost" style="padding:0 20px;height:44px">Discard</div><div class="r-btn" style="padding:0 24px;height:44px">Save card</div></div>
+      </div>
+      <div style="flex:1;display:flex;gap:40px;padding:40px 56px;align-items:flex-start">
+        <div class="r-card" style="flex:1.4;padding:40px 44px;display:flex;flex-direction:column;gap:22px;min-height:100%">
+          <span class="r-tape" style="background:var(--tapeSage);left:70px;top:-9px;width:80px"></span>
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px">
+            <div class="r-field"><label>Recipe name</label><div class="r-input r-title" style="font-size:28px;font-style:normal;color:var(--ink);height:48px">Overnight Focaccia</div></div>
+            <div class="r-field"><label>Author</label><div class="r-input">flakeykarma</div></div>
+            <div class="r-field"><label>Category</label><div class="r-input">Baking</div></div>
+          </div>
+          <div class="r-field"><label>Ingredients</label>
+            <div style="display:grid;grid-template-columns:24px 1.6fr .8fr 1fr .6fr 32px;gap:12px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--inkSoft);height:26px;align-items:center"><span></span><span>Name</span><span>Amount</span><span>Source</span><span style="text-align:right">%</span><span></span></div>
+            <div style="display:grid;grid-template-columns:24px 1.6fr .8fr 1fr .6fr 32px;gap:12px;height:40px;align-items:center;border-bottom:1px solid var(--cardLine)"><svg class="ic" style="color:var(--ring)"><use href="#i-drag"/></svg><b>Bread flour</b><span>500 g</span><span style="color:var(--inkSoft)">King Arthur</span><span style="text-align:right">100%</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div style="display:grid;grid-template-columns:24px 1.6fr .8fr 1fr .6fr 32px;gap:12px;height:40px;align-items:center;border-bottom:1px solid var(--cardLine)"><svg class="ic" style="color:var(--ring)"><use href="#i-drag"/></svg><b>Water</b><span>400 g</span><span style="color:var(--inkSoft)">tap, 90°F</span><span style="text-align:right">80%</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div style="display:grid;grid-template-columns:24px 1.6fr .8fr 1fr .6fr 32px;gap:12px;height:40px;align-items:center;border-bottom:1px solid var(--cardLine)"><svg class="ic" style="color:var(--ring)"><use href="#i-drag"/></svg><b>Salt</b><span>11 g</span><span style="color:var(--inkSoft)">Diamond Crystal</span><span style="text-align:right">2.2%</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div style="display:grid;grid-template-columns:24px 1.6fr .8fr 1fr .6fr 32px;gap:12px;height:40px;align-items:center;border-bottom:1px solid var(--cardLine)"><svg class="ic" style="color:var(--ring)"><use href="#i-drag"/></svg><b>Instant yeast</b><span>2 g</span><span style="color:var(--inkSoft)">SAF Red</span><span style="text-align:right">0.4%</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div style="display:grid;grid-template-columns:24px 1.6fr .8fr 1fr .6fr 32px;gap:12px;height:40px;align-items:center;border-bottom:1px solid var(--cardLine)"><svg class="ic" style="color:var(--ring)"><use href="#i-drag"/></svg><b>Olive oil</b><span>30 g</span><span style="color:var(--inkSoft)">California Olive Ranch</span><span style="text-align:right">6%</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div style="display:flex;gap:8px;align-items:center;height:40px;color:var(--rust);font-weight:600;font-size:13px"><svg class="ic"><use href="#i-plus"/></svg>Add ingredient</div>
+          </div>
+          <div class="r-field"><label>Steps</label>
+            <div class="r-step" style="grid-template-columns:24px 1fr 110px 32px"><em>1</em><span>Mix flour, water, yeast and salt to a shaggy dough. Cover.</span><span class="r-input" style="height:32px;font-size:13px;justify-content:flex-end">5 min</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div class="r-step" style="grid-template-columns:24px 1fr 110px 32px"><em>2</em><span>Four sets of stretch-and-folds, 30 minutes apart.</span><span class="r-input" style="height:32px;font-size:13px;justify-content:flex-end">120 min</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div class="r-step" style="grid-template-columns:24px 1fr 110px 32px"><em>3</em><span>Cold ferment in an oiled, covered bowl.</span><span class="r-input" style="height:32px;font-size:13px;justify-content:flex-end">720 min</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div class="r-step" style="grid-template-columns:24px 1fr 110px 32px"><em>4</em><span>Turn into an oiled 9×13 pan, dimple, rest at room temperature.</span><span class="r-input" style="height:32px;font-size:13px;justify-content:flex-end">90 min</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div class="r-step" style="grid-template-columns:24px 1fr 110px 32px"><em>5</em><span>Bake at 450°F until deep gold.</span><span class="r-input" style="height:32px;font-size:13px;justify-content:flex-end">25 min</span><svg class="ic" style="color:var(--inkSoft)"><use href="#i-trash"/></svg></div>
+            <div style="display:flex;gap:8px;align-items:center;height:40px;color:var(--rust);font-weight:600;font-size:13px"><svg class="ic"><use href="#i-plus"/></svg>Add step</div>
+          </div>
+        </div>
+        <div style="flex:.7;display:flex;flex-direction:column;gap:22px">
+          <div class="photo" style="height:220px;border-radius:14px;color:#7A6A57;border:1.5px dashed var(--ring)"></div>
+          <div class="r-card" style="padding:22px 24px;display:flex;flex-direction:column;gap:12px">
+            <span class="r-tape" style="background:var(--tapePink);left:20px;top:-8px"></span>
+            <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);font-weight:700">Notes on the back</div>
+            <div><div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--green)"><span>Hydration</span><span style="color:var(--inkSoft)">14 Aug</span></div><p class="r-hand" style="margin:4px 0 0;font-size:20px;line-height:26px">80% is the ceiling for this flour. 85% pooled.</p></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--green)"><span>Pan</span><span style="color:var(--inkSoft)">20 Aug</span></div><p class="r-hand" style="margin:4px 0 0;font-size:20px;line-height:26px">Metal 9×13 browns better than glass.</p></div>
+            <div class="r-input" style="height:36px;color:var(--inkSoft);font-size:13px">Write a new note…</div>
+          </div>
+          <div class="r-field"><label>Share with group</label><div class="r-group"><span class="on"><svg class="ic"><use href="#i-check"/></svg>user</span><span>auditor</span><span>admin</span></div></div>
+        </div>
+      </div>
+    </div></div><div class="cap">Add / edit. Ingredient table with source and baker's percentage; notes stay on a separate card.</div></div>
+  </div>
+</section>

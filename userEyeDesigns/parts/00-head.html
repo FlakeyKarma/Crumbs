@@ -1,0 +1,123 @@
+<title>Crumbs Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Cormorant:ital,wght@0,400;0,600;0,700;1,500;1,600&family=Quicksand:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:wght@400;600&family=Barlow+Semi+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Zilla+Slab:ital,wght@0,500;0,600;0,700;1,500&family=Karla:wght@400;500;700&display=swap">
+<style>
+/* ---------- page chrome (the review page around the mockups) ---------- */
+:root{
+  --bg:#F6F3EE; --bg2:#EFEAE3; --fg:#1E1A17; --muted:#6E665F; --line:#DED7CE;
+  --accent:#8A5A3C; --accent-fg:#FFFFFF; --frame:#1B1917; --frame-edge:rgba(0,0,0,.18);
+  --chrome:'Instrument Sans','Helvetica Neue',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171514; --bg2:#1F1C1A; --fg:#ECE7E1; --muted:#9A918A; --line:#2E2A27;
+    --accent:#D9A277; --accent-fg:#1B1917; --frame:#0C0B0A; --frame-edge:rgba(255,255,255,.12);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171514; --bg2:#1F1C1A; --fg:#ECE7E1; --muted:#9A918A; --line:#2E2A27;
+  --accent:#D9A277; --accent-fg:#1B1917; --frame:#0C0B0A; --frame-edge:rgba(255,255,255,.12);
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--chrome);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+*,*::before,*::after{box-sizing:border-box}
+a{color:var(--accent)} a:hover{color:var(--fg)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1320px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;font-weight:600;letter-spacing:.01em}
+.brand small{font-weight:400;color:var(--muted)}
+.topnav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.topnav a{text-decoration:none;color:var(--muted);font-size:13px;font-weight:500;padding:6px 10px;border-radius:999px}
+.topnav a:hover{color:var(--fg);background:var(--bg2)}
+.topnav a b{font-weight:600;color:var(--fg);margin-right:6px;font-variant-numeric:tabular-nums}
+
+.intro{max-width:1320px;margin:0 auto;padding:48px 24px 8px}
+.intro h1{font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-.01em;margin:0 0 12px;text-wrap:balance}
+.intro p{max-width:62ch;margin:0;color:var(--muted)}
+.intro .meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--muted)}
+.intro .meta span b{color:var(--fg);font-weight:600}
+
+.sec{max-width:1320px;margin:0 auto;padding:56px 24px 24px;border-top:1px solid var(--line);scroll-margin-top:64px}
+.sec:first-of-type{border-top:0}
+.sec-head{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start;margin-bottom:28px}
+.sec-head .num{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.sec-head h2{margin:0;font-size:28px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+.sec-head .swatches{display:flex;gap:6px;margin-top:12px}
+.sec-head .swatches i{display:block;width:22px;height:22px;border-radius:50%;border:1px solid var(--frame-edge)}
+.sec-head h3{margin:0 0 4px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sec-head p{margin:0;color:var(--fg);font-size:14px;line-height:1.55}
+.sec-head .type{margin-top:8px;color:var(--muted);font-size:13px}
+
+.row-label{display:flex;align-items:baseline;gap:10px;margin:22px 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.row-label span{font-weight:400;letter-spacing:0;text-transform:none;font-size:13px}
+.phones{display:flex;gap:30px;overflow-x:auto;padding:8px 2px 18px;scroll-snap-type:x proximity}
+.phone-slot{flex:none;scroll-snap-align:start}
+.phone-slot .cap{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.phone{width:390px;height:844px;border-radius:44px;background:var(--frame);padding:10px;box-shadow:0 30px 60px -20px rgba(0,0,0,.35),0 0 0 1px var(--frame-edge)}
+.screen{width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+.desks{display:flex;flex-direction:column;gap:28px}
+.desk-slot .cap{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.desk-wrap{width:100%;aspect-ratio:1440/900;position:relative;overflow:hidden;border-radius:12px;box-shadow:0 30px 60px -20px rgba(0,0,0,.35),0 0 0 1px var(--frame-edge)}
+.desk{position:absolute;top:0;left:0;width:1440px;height:900px;transform-origin:0 0;transform:scale(var(--s,1));overflow:hidden;display:flex}
+
+/* photo placeholder: visibly a placeholder, tinted by currentColor per direction */
+.photo{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background-color:color-mix(in oklab,currentColor 12%,transparent);
+  background-image:repeating-linear-gradient(135deg,transparent 0 9px,color-mix(in oklab,currentColor 10%,transparent) 9px 10px)}
+.photo::after{content:"Photo";font:500 11px/1 var(--chrome);letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.foot{max-width:1320px;margin:0 auto;padding:40px 24px 80px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M6 4h9l4 4v12H6z"/><path d="M15 4v4h4M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M8 7l1 13h6l1-13"/></symbol>
+  <symbol id="i-drag" viewBox="0 0 24 24"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M15.5 5a3.5 3.5 0 0 1 0 7M17 14.5a6 6 0 0 1 4.5 5.5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19a2 2 0 0 1 2-2h14"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M4 7h16M6 7l-3 7a3 3 0 0 0 6 0zM18 7l-3 7a3 3 0 0 0 6 0z"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><circle cx="9" cy="10" r="1.5"/><path d="m20 16-5-5-8 8"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">Crumbs <small>five UI directions</small></div>
+    <nav class="topnav">
+      <a href="#rolodex"><b>1</b>Rolodex</a>
+      <a href="#ledger"><b>2</b>Ledger</a>
+      <a href="#editorial"><b>3</b>Editorial</a>
+      <a href="#console"><b>4</b>Kitchen Console</a>
+      <a href="#retro"><b>5</b>Retro Cookbook</a>
+    </nav>
+  </div>
+</header>
+
+<section class="intro">
+  <h1>Five ways Crumbs could look</h1>
+  <p>Each direction shows the same three jobs, browsing the library, reading one recipe, and adding or editing a recipe, on a phone and on a desktop. The sample recipes reflect the current data model: ingredients carry a source and a percentage, steps carry a timing, and notes carry a date.</p>
+  <div class="meta">
+    <span><b>3</b> phone screens per direction</span>
+    <span><b>2</b> desktop screens per direction</span>
+    <span>Static mockups, photos shown as placeholders</span>
+  </div>
+</section>

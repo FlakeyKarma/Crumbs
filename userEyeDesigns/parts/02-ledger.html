@@ -1,0 +1,281 @@
+<style>
+/* ---------- 2. Ledger ---------- */
+#ledger .screen,#ledger .desk{
+  --paper:#F2F2EF;--ink:#141414;--ink2:#5C5C58;--rule:#141414;--rule2:rgba(20,20,20,.18);--wash:#E6E6E1;
+  background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk','Helvetica Neue',Arial,sans-serif;font-size:14px;line-height:1.35}
+#ledger .l-mono{font-family:'IBM Plex Mono','SFMono-Regular',Menlo,monospace;font-variant-numeric:tabular-nums;font-size:12px}
+#ledger .l-lab{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);font-weight:500}
+#ledger .l-rule{border-top:1px solid var(--rule)}
+#ledger .l-rule2{border-top:1px solid var(--rule2)}
+#ledger .l-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid var(--rule2)}
+#ledger .l-row .name{font-size:16px;font-weight:500}
+#ledger .l-row .sub{color:var(--ink2);font-size:12.5px;margin-top:2px}
+#ledger .l-filters{display:flex;gap:18px;font-size:13px;color:var(--ink2)}
+#ledger .l-filters span.on{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1.5px}
+#ledger .l-ing{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:baseline;padding:8px 0;border-top:1px solid var(--rule2);font-size:14px}
+#ledger .l-ing small{color:var(--ink2);font-size:12px}
+#ledger .l-step{display:grid;grid-template-columns:32px 1fr 52px;gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid var(--rule2);font-size:14px}
+#ledger .l-step .t{text-align:right;color:var(--ink2)}
+#ledger .l-note{padding:10px 0;border-top:1px solid var(--rule2);display:grid;grid-template-columns:1fr auto;gap:12px;font-size:14px}
+#ledger .l-note b{font-weight:600;display:block;font-size:12.5px;letter-spacing:.02em;margin-bottom:2px}
+#ledger .l-note .d{color:var(--ink2)}
+#ledger .l-in{height:40px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;font-size:15px}
+#ledger .l-in.ph{color:var(--ink2)}
+#ledger .l-tb{font-size:13px;font-weight:600;letter-spacing:.02em}
+#ledger .l-btn{border:1px solid var(--rule);height:44px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;padding:0 18px}
+#ledger .l-btn.solid{background:var(--ink);color:var(--paper)}
+#ledger .l-nav{width:220px;border-right:1px solid var(--rule2);padding:32px 28px;display:flex;flex-direction:column;gap:6px}
+#ledger .l-nav a{color:var(--ink2);font-size:14px;padding:8px 0;text-decoration:none;display:flex;justify-content:space-between}
+#ledger .l-nav a.on{color:var(--ink);font-weight:600}
+#ledger table{border-collapse:collapse;width:100%;font-size:14px}
+#ledger th{text-align:left;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);font-weight:500;padding:0 12px 10px 0;border-bottom:1px solid var(--rule)}
+#ledger td{padding:13px 12px 13px 0;border-bottom:1px solid var(--rule2);vertical-align:baseline}
+#ledger tr.on td{background:var(--wash)}
+#ledger td.n,#ledger th.n{text-align:right;padding-right:0}
+#ledger .l-seg{display:flex;border:1px solid var(--rule)}
+#ledger .l-seg span{padding:8px 14px;font-size:12px;font-weight:500;color:var(--ink2);border-right:1px solid var(--rule2)}
+#ledger .l-seg span:last-child{border-right:0}
+#ledger .l-seg span.on{background:var(--ink);color:var(--paper);font-weight:600}
+</style>
+
+<section class="sec" id="ledger">
+  <div class="sec-head">
+    <div>
+      <div class="num">Direction 2</div>
+      <h2>Ledger</h2>
+      <div class="swatches"><i style="background:#F2F2EF"></i><i style="background:#E6E6E1"></i><i style="background:#5C5C58"></i><i style="background:#141414"></i></div>
+      <div class="type">Hanken Grotesk, IBM Plex Mono for every number</div>
+    </div>
+    <div><h3>Why</h3><p>Brutally minimal: one paper tone, one ink, hairlines and type. Amounts, timings and percentages line up in a monospaced column, so a recipe reads like a well-kept ledger and the library scans in seconds. Trivial to theme.</p></div>
+    <div><h3>Tradeoff</h3><p>Can feel cold and administrative. Without photos or color there is little warmth, so the direction leans entirely on typographic discipline and the quality of the copy.</p></div>
+  </div>
+
+  <div class="row-label">Phone <span>390 × 844</span></div>
+  <div class="phones">
+
+    <!-- 2 / Browse -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:60px 22px 0;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="l-lab" style="color:var(--ink)">Crumbs</span><span class="l-mono" style="color:var(--ink2)">12 recipes</span></div>
+        <div class="l-in ph"><span>Search</span><svg class="ic" style="font-size:16px;color:var(--ink)"><use href="#i-search"/></svg></div>
+        <div class="l-filters"><span class="on">All</span><span>Breakfast</span><span>Mains</span><span>Baking</span><span>Sides</span></div>
+      </div>
+      <div style="padding:14px 22px 0;flex:1;overflow:hidden">
+        <div class="l-rule"></div>
+        <div class="l-row"><div><div class="name">Grandma's Skillet Cornbread</div><div class="sub">Baking · 3 notes</div></div><span class="l-mono">55 min</span></div>
+        <div class="l-row"><div><div class="name">Green Eggs and Ham</div><div class="sub">Breakfast</div></div><span class="l-mono">20 min</span></div>
+        <div class="l-row"><div><div class="name">Lemon Olive Oil Cake</div><div class="sub">Baking · 1 note</div></div><span class="l-mono">1 h 10</span></div>
+        <div class="l-row"><div><div class="name">Miso Butter Salmon</div><div class="sub">Mains</div></div><span class="l-mono">25 min</span></div>
+        <div class="l-row"><div><div class="name">Overnight Focaccia</div><div class="sub">Baking · 2 notes</div></div><span class="l-mono">18 h</span></div>
+        <div class="l-row"><div><div class="name">Shakshuka</div><div class="sub">Breakfast</div></div><span class="l-mono">30 min</span></div>
+        <div class="l-row"><div><div class="name">Weeknight Red Lentil Dal</div><div class="sub">Mains · 1 note</div></div><span class="l-mono">40 min</span></div>
+        <div class="l-row"><div><div class="name">Charred Broccoli, Chili Crisp</div><div class="sub">Sides</div></div><span class="l-mono">18 min</span></div>
+        <div class="l-row"><div><div class="name">Brown Butter Rice Krispies</div><div class="sub">Baking</div></div><span class="l-mono">15 min</span></div>
+      </div>
+      <div style="padding:12px 22px 30px;background:var(--paper);border-top:1px solid var(--rule)"><div class="l-btn solid"><svg class="ic" style="font-size:16px"><use href="#i-plus"/></svg>New recipe</div></div>
+    </div></div><div class="cap">Browse. A single hairline list; time in a monospaced column.</div></div>
+
+    <!-- 2 / Detail -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:60px 22px 0;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="display:flex;gap:6px;align-items:center"><svg class="ic" style="font-size:16px"><use href="#i-back"/></svg>Library</span><span style="font-weight:600">Edit</span></div>
+        <div>
+          <div style="font-size:27px;font-weight:500;line-height:1.12;letter-spacing:-.01em;text-wrap:balance">Grandma's Skillet Cornbread</div>
+          <div class="l-mono" style="color:var(--ink2);margin-top:8px">flakeykarma · 2026-03-12 · 55 min · serves 8</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px 0;flex:1;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;padding-bottom:8px"><span class="l-lab">Ingredients</span><span class="l-mono" style="color:var(--ink2)">9</span></div>
+        <div class="l-rule"></div>
+        <div class="l-ing"><span class="l-mono">1 ½ c</span><span>Yellow cornmeal <small>Bob's Red Mill</small></span><span class="l-mono">100%</span></div>
+        <div class="l-ing"><span class="l-mono">½ c</span><span>All-purpose flour <small>King Arthur</small></span><span class="l-mono">33%</span></div>
+        <div class="l-ing"><span class="l-mono">1 ¼ c</span><span>Buttermilk</span><span class="l-mono">83%</span></div>
+        <div class="l-ing"><span class="l-mono">2</span><span>Eggs</span><span></span></div>
+        <div class="l-ing"><span class="l-mono">6 tbsp</span><span>Butter, melted</span><span></span></div>
+        <div class="l-ing"><span class="l-mono">2 tbsp</span><span>Honey</span><span></span></div>
+        <div class="l-ing"><span class="l-mono">1 tsp</span><span>Baking powder</span><span></span></div>
+        <div class="l-ing"><span class="l-mono">½ tsp</span><span>Baking soda</span><span></span></div>
+        <div class="l-ing"><span class="l-mono">1 tsp</span><span>Salt</span><span></span></div>
+        <div style="display:flex;justify-content:space-between;padding:22px 0 8px"><span class="l-lab">Steps</span><span class="l-mono" style="color:var(--ink2)">53 min</span></div>
+        <div class="l-rule"></div>
+        <div class="l-step"><span class="l-mono">01</span><span>Heat the oven to 425°F with the 10-inch cast iron skillet inside.</span><span class="l-mono t">15</span></div>
+        <div class="l-step"><span class="l-mono">02</span><span>Whisk cornmeal, flour, baking powder, soda and salt.</span><span class="l-mono t">2</span></div>
+        <div class="l-step"><span class="l-mono">03</span><span>Whisk buttermilk, eggs and honey. Fold into the dry mix until just combined.</span><span class="l-mono t">3</span></div>
+        <div class="l-step"><span class="l-mono">04</span><span>Swirl butter in the hot skillet; pour in the batter.</span><span class="l-mono t">1</span></div>
+        <div class="l-step"><span class="l-mono">05</span><span>Bake until golden and pulling from the edges.</span><span class="l-mono t">22</span></div>
+        <div class="l-step"><span class="l-mono">06</span><span>Rest in the pan, cut into wedges.</span><span class="l-mono t">10</span></div>
+      </div>
+    </div></div><div class="cap">Detail. Amount column, source in small type, minutes right-aligned.</div></div>
+
+    <!-- 2 / Add-Edit -->
+    <div class="phone-slot"><div class="phone"><div class="screen">
+      <div style="padding:60px 22px 0;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--ink2)">Cancel</span><span class="l-lab" style="color:var(--ink)">New recipe</span><span style="font-weight:600">Save</span></div>
+        <div class="l-in" style="font-size:22px;font-weight:500;height:48px">Weeknight Red Lentil Dal</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+          <div><div class="l-lab" style="margin-bottom:4px">Author</div><div class="l-in" style="font-size:14px;height:34px">flakeykarma</div></div>
+          <div><div class="l-lab" style="margin-bottom:4px">Category</div><div class="l-in" style="font-size:14px;height:34px">Mains <svg class="ic" style="font-size:14px;transform:rotate(90deg)"><use href="#i-chevron"/></svg></div></div>
+        </div>
+      </div>
+      <div style="padding:22px 22px 0;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:22px">
+        <div>
+          <div style="display:flex;justify-content:space-between;padding-bottom:8px"><span class="l-lab">Ingredients</span><span class="l-lab">amt · source · %</span></div>
+          <div class="l-rule"></div>
+          <div class="l-ing"><span class="l-mono">1 c</span><span>Red lentils <small>Rancho Gordo</small></span><span class="l-mono">100%</span></div>
+          <div class="l-ing"><span class="l-mono">1</span><span>Onion, diced</span><span></span></div>
+          <div class="l-ing"><span class="l-mono">1 tbsp</span><span>Ginger, grated</span><span></span></div>
+          <div class="l-ing"><span class="l-mono">400 ml</span><span>Coconut milk <small>Aroy-D</small></span><span></span></div>
+          <div class="l-ing" style="color:var(--ink2)"><span class="l-mono">amt</span><span>Ingredient</span><svg class="ic" style="font-size:16px;color:var(--ink)"><use href="#i-plus"/></svg></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;padding-bottom:8px"><span class="l-lab">Steps</span><span class="l-lab">min</span></div>
+          <div class="l-rule"></div>
+          <div class="l-step"><span class="l-mono">01</span><span>Sweat onion, ginger and spices in ghee.</span><span class="l-mono t">8</span></div>
+          <div class="l-step"><span class="l-mono">02</span><span>Add lentils, water, coconut milk. Simmer, stirring now and then.</span><span class="l-mono t">25</span></div>
+          <div class="l-step" style="color:var(--ink2)"><span class="l-mono">03</span><span>Next step</span><span class="l-mono t">–</span></div>
+        </div>
+        <div>
+          <div class="l-lab" style="padding-bottom:8px">Note</div>
+          <div class="l-rule"></div>
+          <div class="l-in ph" style="height:44px;font-size:14px">Optional. Dated when saved.</div>
+        </div>
+        <div>
+          <div class="l-lab" style="padding-bottom:8px">Share with group</div>
+          <div class="l-seg"><span class="on">user</span><span>auditor</span><span>admin</span></div>
+        </div>
+      </div>
+    </div></div><div class="cap">Add / edit. Underlined fields; the same grid as the detail view, editable.</div></div>
+  </div>
+
+  <div class="row-label">Desktop <span>1440 × 900</span></div>
+  <div class="desks">
+
+    <!-- 2 / Desktop library + detail -->
+    <div class="desk-slot"><div class="desk-wrap"><div class="desk">
+      <nav class="l-nav">
+        <div class="l-lab" style="color:var(--ink);margin-bottom:22px">Crumbs</div>
+        <a class="on" href="#ledger">Library <span class="l-mono">12</span></a>
+        <a href="#ledger">Ingredients <span class="l-mono">84</span></a>
+        <a href="#ledger">Notes <span class="l-mono">9</span></a>
+        <a href="#ledger">Groups <span class="l-mono">3</span></a>
+        <a href="#ledger">Themes <span class="l-mono">1</span></a>
+        <div style="margin-top:auto;color:var(--ink2);font-size:12.5px">flakeykarma<br>admin</div>
+      </nav>
+      <main style="flex:1;display:grid;grid-template-columns:minmax(0,1fr) 460px">
+        <div style="padding:32px 36px;border-right:1px solid var(--rule2);display:flex;flex-direction:column;gap:22px;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:24px">
+            <div class="l-in ph" style="width:360px;height:36px;font-size:14px"><span>Search recipes, ingredients, notes</span><svg class="ic" style="font-size:16px;color:var(--ink)"><use href="#i-search"/></svg></div>
+            <div style="display:flex;gap:24px;align-items:center"><div class="l-filters"><span class="on">All</span><span>Breakfast</span><span>Mains</span><span>Baking</span><span>Sides</span></div><div class="l-btn solid" style="height:36px"><svg class="ic" style="font-size:14px"><use href="#i-plus"/></svg>New</div></div>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Author</th><th class="n">Ingredients</th><th class="n">Notes</th><th class="n">Time</th><th class="n">Added</th></tr></thead>
+            <tbody>
+              <tr><td class="l-tb">Brown Butter Rice Krispies</td><td>Baking</td><td>flakeykarma</td><td class="n l-mono">5</td><td class="n l-mono">0</td><td class="n l-mono">15 min</td><td class="n l-mono">2026-08-02</td></tr>
+              <tr><td class="l-tb">Charred Broccoli, Chili Crisp</td><td>Sides</td><td>flakeykarma</td><td class="n l-mono">6</td><td class="n l-mono">0</td><td class="n l-mono">18 min</td><td class="n l-mono">2026-07-19</td></tr>
+              <tr class="on"><td class="l-tb">Grandma's Skillet Cornbread</td><td>Baking</td><td>flakeykarma</td><td class="n l-mono">9</td><td class="n l-mono">3</td><td class="n l-mono">55 min</td><td class="n l-mono">2026-03-12</td></tr>
+              <tr><td class="l-tb">Green Eggs and Ham</td><td>Breakfast</td><td>flakeykarma</td><td class="n l-mono">6</td><td class="n l-mono">0</td><td class="n l-mono">20 min</td><td class="n l-mono">2026-02-27</td></tr>
+              <tr><td class="l-tb">Lemon Olive Oil Cake</td><td>Baking</td><td>flakeykarma</td><td class="n l-mono">10</td><td class="n l-mono">1</td><td class="n l-mono">1 h 10</td><td class="n l-mono">2026-05-04</td></tr>
+              <tr><td class="l-tb">Miso Butter Salmon</td><td>Mains</td><td>flakeykarma</td><td class="n l-mono">7</td><td class="n l-mono">0</td><td class="n l-mono">25 min</td><td class="n l-mono">2026-06-11</td></tr>
+              <tr><td class="l-tb">Overnight Focaccia</td><td>Baking</td><td>flakeykarma</td><td class="n l-mono">7</td><td class="n l-mono">2</td><td class="n l-mono">18 h</td><td class="n l-mono">2026-08-14</td></tr>
+              <tr><td class="l-tb">Shakshuka</td><td>Breakfast</td><td>flakeykarma</td><td class="n l-mono">11</td><td class="n l-mono">0</td><td class="n l-mono">30 min</td><td class="n l-mono">2026-04-22</td></tr>
+              <tr><td class="l-tb">Weeknight Red Lentil Dal</td><td>Mains</td><td>flakeykarma</td><td class="n l-mono">12</td><td class="n l-mono">1</td><td class="n l-mono">40 min</td><td class="n l-mono">2026-08-29</td></tr>
+            </tbody>
+          </table>
+          <div class="l-mono" style="color:var(--ink2);margin-top:auto">Sorted by name · 12 of 12</div>
+        </div>
+        <div style="padding:32px 36px;display:flex;flex-direction:column;gap:20px;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="l-lab">Selected</span><span style="font-size:13px;font-weight:600">Edit · Cook</span></div>
+          <div>
+            <div style="font-size:26px;font-weight:500;line-height:1.12;letter-spacing:-.01em">Grandma's Skillet Cornbread</div>
+            <div class="l-mono" style="color:var(--ink2);margin-top:8px">flakeykarma · 2026-03-12 · 55 min · serves 8</div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px"><span class="l-lab">Ingredients</span><span class="l-mono" style="color:var(--ink2)">9</span></div>
+            <div class="l-rule"></div>
+            <div class="l-ing"><span class="l-mono">1 ½ c</span><span>Yellow cornmeal <small>Bob's Red Mill</small></span><span class="l-mono">100%</span></div>
+            <div class="l-ing"><span class="l-mono">½ c</span><span>All-purpose flour <small>King Arthur</small></span><span class="l-mono">33%</span></div>
+            <div class="l-ing"><span class="l-mono">1 ¼ c</span><span>Buttermilk</span><span class="l-mono">83%</span></div>
+            <div class="l-ing"><span class="l-mono">2</span><span>Eggs</span><span></span></div>
+            <div class="l-ing"><span class="l-mono">6 tbsp</span><span>Butter, melted</span><span></span></div>
+            <div class="l-ing"><span class="l-mono">2 tbsp</span><span>Honey</span><span></span></div>
+            <div class="l-ing"><span class="l-mono">1 tsp · ½ tsp · 1 tsp</span><span>Baking powder · soda · salt</span><span></span></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px"><span class="l-lab">Steps</span><span class="l-mono" style="color:var(--ink2)">53 min</span></div>
+            <div class="l-rule"></div>
+            <div class="l-step"><span class="l-mono">01</span><span>Heat the oven to 425°F with the skillet inside.</span><span class="l-mono t">15</span></div>
+            <div class="l-step"><span class="l-mono">02</span><span>Whisk the dry ingredients.</span><span class="l-mono t">2</span></div>
+            <div class="l-step"><span class="l-mono">03</span><span>Whisk wet, fold into dry.</span><span class="l-mono t">3</span></div>
+            <div class="l-step"><span class="l-mono">04</span><span>Butter the hot skillet, pour in batter.</span><span class="l-mono t">1</span></div>
+            <div class="l-step"><span class="l-mono">05</span><span>Bake until golden.</span><span class="l-mono t">22</span></div>
+            <div class="l-step"><span class="l-mono">06</span><span>Rest, cut into wedges.</span><span class="l-mono t">10</span></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px"><span class="l-lab">Notes</span><span class="l-mono" style="color:var(--ink2)">3</span></div>
+            <div class="l-rule"></div>
+            <div class="l-note"><span><b>Less sweet</b>Used 2 tbsp less sugar, still plenty sweet.</span><span class="l-mono d">2026-03-03</span></div>
+            <div class="l-note"><span><b>Timing</b>Needed 40 min at 375°F, not 35. Toothpick the middle.</span><span class="l-mono d">2026-03-08</span></div>
+            <div class="l-note"><span><b>Thanksgiving</b>Family loved it. Making again.</span><span class="l-mono d">2026-01-12</span></div>
+          </div>
+        </div>
+      </main>
+    </div></div><div class="cap">Library and detail. A sortable table with counts; the selected row opens in a fixed right column.</div></div>
+
+    <!-- 2 / Desktop add-edit -->
+    <div class="desk-slot"><div class="desk-wrap"><div class="desk">
+      <nav class="l-nav">
+        <div class="l-lab" style="color:var(--ink);margin-bottom:22px">Crumbs</div>
+        <a class="on" href="#ledger">Library <span class="l-mono">12</span></a>
+        <a href="#ledger">Ingredients <span class="l-mono">84</span></a>
+        <a href="#ledger">Notes <span class="l-mono">9</span></a>
+        <a href="#ledger">Groups <span class="l-mono">3</span></a>
+        <a href="#ledger">Themes <span class="l-mono">1</span></a>
+      </nav>
+      <main style="flex:1;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:28px 40px;border-bottom:1px solid var(--rule)">
+          <div style="display:flex;gap:18px;align-items:baseline"><span class="l-lab">Library / New recipe</span><span class="l-mono" style="color:var(--ink2)">unsaved</span></div>
+          <div style="display:flex;gap:10px"><div class="l-btn" style="height:36px">Cancel</div><div class="l-btn solid" style="height:36px">Save recipe</div></div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:56px;padding:36px 40px;overflow:hidden">
+          <div style="display:flex;flex-direction:column;gap:30px">
+            <div class="l-in" style="font-size:30px;font-weight:500;height:56px;letter-spacing:-.01em">Weeknight Red Lentil Dal</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px">
+              <div><div class="l-lab" style="margin-bottom:4px">Author</div><div class="l-in" style="font-size:14px;height:36px">flakeykarma</div></div>
+              <div><div class="l-lab" style="margin-bottom:4px">Category</div><div class="l-in" style="font-size:14px;height:36px">Mains <svg class="ic" style="font-size:14px;transform:rotate(90deg)"><use href="#i-chevron"/></svg></div></div>
+              <div><div class="l-lab" style="margin-bottom:4px">Serves</div><div class="l-in l-mono" style="font-size:14px;height:36px">4</div></div>
+            </div>
+            <div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding-bottom:8px"><span class="l-lab">Amount</span><span class="l-lab">Ingredient</span><span class="l-lab">Source</span><span class="l-lab" style="text-align:right">%</span><span></span></div>
+              <div class="l-rule"></div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">1 c</span><span>Red lentils</span><span style="color:var(--ink2)">Rancho Gordo</span><span class="l-mono" style="text-align:right">100%</span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">1</span><span>Onion, diced</span><span style="color:var(--ink2)"></span><span class="l-mono" style="text-align:right"></span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">1 tbsp</span><span>Ginger, grated</span><span style="color:var(--ink2)"></span><span class="l-mono" style="text-align:right"></span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">2 tsp</span><span>Garam masala</span><span style="color:var(--ink2)">Diaspora Co.</span><span class="l-mono" style="text-align:right"></span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">400 ml</span><span>Coconut milk</span><span style="color:var(--ink2)">Aroy-D</span><span class="l-mono" style="text-align:right"></span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:90px 1fr 180px 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline;color:var(--ink2)"><span class="l-mono">amt</span><span>Add ingredient</span><span></span><span></span><svg class="ic" style="font-size:14px;color:var(--ink)"><use href="#i-plus"/></svg></div>
+            </div>
+            <div>
+              <div style="display:grid;grid-template-columns:40px 1fr 70px 28px;gap:16px;padding-bottom:8px"><span class="l-lab">#</span><span class="l-lab">Step</span><span class="l-lab" style="text-align:right">Min</span><span></span></div>
+              <div class="l-rule"></div>
+              <div style="display:grid;grid-template-columns:40px 1fr 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">01</span><span>Sweat onion, ginger and spices in ghee until fragrant.</span><span class="l-mono" style="text-align:right">8</span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:40px 1fr 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">02</span><span>Add lentils, water and coconut milk. Simmer, stirring now and then, until the lentils collapse.</span><span class="l-mono" style="text-align:right">25</span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:40px 1fr 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline"><span class="l-mono">03</span><span>Finish with lime and cilantro.</span><span class="l-mono" style="text-align:right">2</span><svg class="ic" style="font-size:14px;color:var(--ink2)"><use href="#i-x"/></svg></div>
+              <div style="display:grid;grid-template-columns:40px 1fr 70px 28px;gap:16px;padding:10px 0;border-top:1px solid var(--rule2);align-items:baseline;color:var(--ink2)"><span class="l-mono">04</span><span>Add step</span><span></span><svg class="ic" style="font-size:14px;color:var(--ink)"><use href="#i-plus"/></svg></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:30px">
+            <div><div class="l-lab" style="margin-bottom:8px">Photo</div><div class="photo" style="height:200px;color:#5C5C58;border:1px solid var(--rule)"></div></div>
+            <div>
+              <div class="l-lab" style="padding-bottom:8px">Notes</div>
+              <div class="l-rule"></div>
+              <div class="l-note"><span><b>Spice</b>Double the garam masala for the crowd that likes it hot.</span><span class="l-mono d">2026-08-29</span></div>
+              <div class="l-in ph" style="height:44px;font-size:14px;border-bottom-color:var(--rule2)">Add a note. Dated when saved.</div>
+            </div>
+            <div><div class="l-lab" style="margin-bottom:10px">Share with group</div><div class="l-seg" style="display:inline-flex"><span class="on">user</span><span>auditor</span><span>admin</span></div></div>
+            <div class="l-mono" style="color:var(--ink2);margin-top:auto">guid assigned on save</div>
+          </div>
+        </div>
+      </main>
+    </div></div><div class="cap">Add / edit. Column headers name the schema fields directly: amount, ingredient, source, percentage.</div></div>
+  </div>
+</section>

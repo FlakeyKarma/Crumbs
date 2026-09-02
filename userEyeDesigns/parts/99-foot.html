@@ -1,0 +1,11 @@
+<footer class="foot">
+  Crumbs · five UI directions · static mockups for review. Source parts live in <span style="font-family:ui-monospace,Menlo,monospace">userEyeDesigns/parts</span>; rebuild with <span style="font-family:ui-monospace,Menlo,monospace">build.sh</span>.
+</footer>
+<script>
+(function(){
+  var wraps=document.querySelectorAll('.desk-wrap');
+  function fit(){for(var i=0;i<wraps.length;i++){var w=wraps[i].clientWidth;if(w>0){wraps[i].querySelector('.desk').style.setProperty('--s',(w/1440).toFixed(4));}}}
+  fit();
+  if('ResizeObserver' in window){var ro=new ResizeObserver(fit);for(var j=0;j<wraps.length;j++){ro.observe(wraps[j]);}}else{window.addEventListener('resize',fit);}
+})();
+</script>
