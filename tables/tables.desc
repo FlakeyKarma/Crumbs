@@ -1,0 +1,77 @@
+Author - Recipe creator
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(32)
+	- Email:VARCHAR(32)
+	- - Optional
+	- User GUID:VARCHAR(64)
+	- - Optional
+Groups
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Description:VARCHAR(32)
+	- Access:CHAR
+	- - 0 - Read Recipes/manage own UI
+	- - 1 - Add Recipes
+	- - 2 - Manage own recipes
+	- - 3 - Manage other's recipes
+	- - 4 - Manage other user access
+	- - 5 - Manage user properties
+	- - 6 - Manage system configuration
+	- - 7 - Root access
+	- Audit:BOOLEAN
+	- - Admin, but read only
+Ingredients
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Reference GUID:VARCHAR(64)
+	- Measurement:FLOAT
+	- Unit:INTEGER
+	- Recipe GUID:VARCHAR(64)
+	- Step Index:UNSIGNED CHAR
+Notes
+	- GUID:VARCHAR(64)
+	- Step Index:UNSIGNED CHAR
+	- Body:VARCHAR(128)
+	- X:UNSIGNED CHAR(2)
+	- Y:UNSIGNED CHAR(2)
+	- YAW:FLOAT
+	- Width:UNSIGNED CHAR
+	- Length:UNSIGNED CHAR
+	- Color:UNSIGNED CHAR(3)
+	- Style:UNSIGNED CHAR
+	- Author GUID:VARCHAR(64)
+Recipes
+	- GUID:VARCHAR(64)
+	- Submission GUID:VARCHAR(64)
+	- Latest Update GUID:VARCHAR(64)
+Sources
+	- GUID:VARCHAR(64)
+	- Author GUID:VARCHAR(64)
+	- Type:UNSIGNED CHAR
+	- Type Descriptor:VARCHAR(16)
+Steps
+	- GUID:VARCHAR(64)
+	- Recipe GUID:VARCHAR(64)
+	- Index:UNSIGNED CHAR
+	- Label:VARCHAR(24)
+	- Step:VARCHAR(32)
+Submissions
+	- GUID:VARCHAR(64)
+	- User GUID:VARCHAR
+	- Source GUID:VARCHAR(64)
+	- Author GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Description:VARCHAR(32)
+Themes
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Description:VARCHAR(32)
+	- Author GUID:VARCHAR(64)
+	- Files Path:VARCHAR(64)
+Users
+	- GUID:VARCHAR(64)
+	- First Name:VARCHAR(16)
+	- - Optional
+	- Last Name:VARCHAR(16)
+	- Groups:Array VARCHAR(64)
+	- Theme GUID:VARCHAR(64)

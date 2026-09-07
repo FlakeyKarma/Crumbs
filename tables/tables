@@ -1,0 +1,68 @@
+Author - Recipe creator
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(32)
+	- Email:VARCHAR(32)
+	- - Optional
+	- User GUID:VARCHAR(64)
+	- - Optional
+Groups
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Description:VARCHAR(32)
+	- Access:CHAR
+	- Audit:BOOLEAN
+Ingredients
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Reference GUID:VARCHAR(64)
+	- Measurement:FLOAT
+	- Unit:INTEGER
+	- Recipe GUID:VARCHAR(64)
+	- Step Index:CHAR
+Notes
+	- GUID:VARCHAR(64)
+	- Step Index:CHAR
+	- Body:VARCHAR(128)
+	- X:CHAR(2)
+	- Y:CHAR(2)
+	- YAW:FLOAT
+	- Width:CHAR
+	- Length:CHAR
+	- Color:CHAR(3)
+	- Style:CHAR
+	- Author GUID:VARCHAR(64)
+Recipes
+	- GUID:VARCHAR(64)
+	- Submission GUID:VARCHAR(64)
+	- Latest Update GUID:VARCHAR(64)
+Sources
+	- GUID:VARCHAR(64)
+	- Author GUID:VARCHAR(64)
+	- Type:CHAR
+	- Type Descriptor:VARCHAR(16)
+Steps
+	- GUID:VARCHAR(64)
+	- Recipe GUID:VARCHAR(64)
+	- Index:CHAR
+	- Label:VARCHAR(24)
+	- Step:VARCHAR(32)
+Submissions
+	- GUID:VARCHAR(64)
+	- User GUID:VARCHAR
+	- Source GUID:VARCHAR(64)
+	- Author GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Description:VARCHAR(32)
+Themes
+	- GUID:VARCHAR(64)
+	- Name:VARCHAR(16)
+	- Description:VARCHAR(32)
+	- Author GUID:VARCHAR(64)
+	- Files Path:VARCHAR(64)
+Users
+	- GUID:VARCHAR(64)
+	- First Name:VARCHAR(16)
+	- - Optional
+	- Last Name:VARCHAR(16)
+	- Groups:Array VARCHAR(64)
+	- Theme GUID:VARCHAR(64)
