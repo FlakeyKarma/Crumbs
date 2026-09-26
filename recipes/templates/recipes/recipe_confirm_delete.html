@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ recipe.title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>Delete “{{ recipe.title }}”?</h1>
+  <p>This removes the recipe, its {{ recipe.recipe_ingredients.count }} ingredient{{ recipe.recipe_ingredients.count|pluralize }}
+     and its {{ recipe.steps.count }} step{{ recipe.steps.count|pluralize }}. It cannot be undone.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Delete it</button>
+      <a class="btn btn--quiet" href="{{ recipe.get_absolute_url }}">Keep it</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% load static %}<!doctype html>
+{% comment %}
+data-theme / data-mode / data-season are set here from the cookie so the
+server's guess is in the markup, then corrected before first paint by
+_appearance_boot.html below. data-mode-pref keeps the reader's actual choice
+(auto / light / dark) so the toggle can name it.
+{% endcomment %}<html lang="en"
+      data-theme="{{ appearance.key }}"
+      data-mode="{{ appearance.mode }}"
+      data-mode-pref="{{ appearance.mode_pref }}"{% if appearance.seasonal %}
+      data-season="{{ appearance.season }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.site_name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ site.tagline }}{% endblock %}">
+  <meta name="color-scheme" content="light dark">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{{ appearance.fonts }}">
+
+  <link rel="stylesheet" href="{% static 'css/crumbs.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+  <link rel="stylesheet" href="{% static 'css/notes.css' %}">
+
+  {% if appearance.tunable %}
+  <style>
+    :root[data-theme="classic"] {
+      --radius: {{ theme.roundness }};
+      --jam: {{ theme.primary }};
+      --jam-deep: {{ theme.primary_hover }};
+      --amber: {{ theme.secondary }};
+      --on-primary: {{ theme.on_primary }};
+    }
+    :root[data-theme="classic"][data-mode="dark"] {
+      --jam: {{ theme.primary_dark }};
+      --jam-deep: {{ theme.primary_dark_hover }};
+      --amber: {{ theme.secondary_dark }};
+      --on-primary: {{ theme.on_primary_dark }};
+      --focus: {{ theme.primary_dark }};
+    }
+  </style>
+  {% endif %}
+
+  {% include "recipes/_appearance_boot.html" %}
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <div class="masthead__inner">
+      <a class="wordmark" href="{% url 'recipes:list' %}">{{ site.site_name }}</a>
+
+      <form class="masthead__search" role="search" action="{% url 'recipes:list' %}" method="get">
+        <label class="skip-link" for="site-search">Search recipes</label>
+        <input type="search" id="site-search" name="q" placeholder="What are you cooking?"
+               value="{{ search_term|default:'' }}">
+        <button class="btn" type="submit">Search</button>
+      </form>
+
+      <nav class="masthead__nav" aria-label="Main">
+        <a href="{% url 'recipes:tags' %}">Tags</a>
+        {% include "recipes/_appearance_picker.html" %}
+        {% if user.is_authenticated %}
+          <a href="{% url 'recipes:create' %}">Add a recipe</a>
+          {% if user.is_staff %}<a href="{% url 'recipes:settings' %}">Settings</a>{% endif %}
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn--quiet" type="submit">Sign out</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}">Sign in</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <main id="main" class="sheet {% block sheet_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    {{ site.site_name }}{% if site.tagline %} — {{ site.tagline }}{% endif %}
+  </footer>
+
+  <script src="{% static 'js/appearance.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

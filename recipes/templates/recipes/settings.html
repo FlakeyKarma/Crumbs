@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>Settings</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <fieldset class="fieldset">
+      <legend>This site</legend>
+      {% include "recipes/_field.html" with field=form.site_name %}
+      {% include "recipes/_field.html" with field=form.tagline %}
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.recipes_per_page %}
+        {% include "recipes/_field.html" with field=form.default_servings %}
+      </div>
+      {% include "recipes/_field.html" with field=form.share_new_recipes inline=True %}
+      {% include "recipes/_field.html" with field=form.allow_anonymous_browsing inline=True %}
+
+      <div class="form-actions">
+        <button class="btn btn--primary" type="submit">Save settings</button>
+      </div>
+    </fieldset>
+  </form>
+
+  <section class="fieldset" aria-labelledby="appearance-heading">
+    <h2 class="legend-like" id="appearance-heading">Appearance</h2>
+    <p class="field__help">
+      Each reader picks their own theme from the header, and it's remembered
+      in their browser rather than on their account — a kitchen tablet and a
+      laptop can look nothing alike. This sets which one a browser starts on
+      before anyone chooses. Light and dark follow the reader's device, or
+      the clock if the device has no preference.
+    </p>
+
+    <ul class="theme-gallery">
+      {% for option in appearance_options %}
+        <li class="theme-card {% if option.key == site.default_appearance %}is-active{% endif %}">
+          <div class="theme-card__body">
+            <h3 class="theme-card__name">
+              {{ option.name }}
+              {% if option.key == site.default_appearance %}<span class="theme-card__badge">Default</span>{% endif %}
+              {% if option.key == appearance.key %}<span class="theme-card__badge">Yours</span>{% endif %}
+            </h3>
+            <p class="theme-card__description">{{ option.description }}</p>
+            <p class="theme-card__meta">
+              Notes appear as {{ option.note_mode }}, on {{ option.paper }} paper
+              {% if option.tunable %} — recoloured by the profile below{% endif %}
+            </p>
+          </div>
+          <div class="theme-card__actions">
+            <form action="{% url 'recipes:set-theme' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="theme" value="{{ option.key }}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button class="btn" type="submit">Try it</button>
+            </form>
+            {% if option.key != site.default_appearance %}
+              <form action="{% url 'recipes:set-default-appearance' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="default_appearance" value="{{ option.key }}">
+                <button class="btn btn--quiet" type="submit">Make default</button>
+              </form>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="fieldset" aria-labelledby="themes-heading">
+    <h2 class="legend-like" id="themes-heading">Classic colour profiles</h2>
+    <p class="field__help">
+      These recolour the Classic theme for everyone. They don't apply to the
+      other five, which bring their own palettes.
+      The active profile sets the accent colour and how round the corners are.
+      Built-in themes come from <code>CRUMBS_THEMES</code> in
+      <code>crumbs/settings.py</code> and can't be edited here — copy one to
+      make a version you can change.
+      {% if not site.theme %}
+        Nothing is chosen, so <code>CRUMBS_THEME</code> decides:
+        <strong>{{ settings_theme_default|default:"the first theme defined" }}</strong>.
+      {% endif %}
+    </p>
+
+    <ul class="theme-gallery">
+      {% for entry in themes %}
+        <li class="theme-card {% if entry.key == active_theme_key %}is-active{% endif %}"
+            style="--card-radius: {{ entry.roundness }}">
+          <div class="theme-card__swatches" aria-hidden="true">
+            <span class="theme-card__chip" style="background: {{ entry.primary }}; color: {{ entry.on_primary }}">Aa</span>
+            <span class="theme-card__chip" style="background: {{ entry.secondary }}">&nbsp;</span>
+            <span class="theme-card__chip theme-card__chip--dark" style="background: {{ entry.primary_dark }}; color: {{ entry.on_primary_dark }}">Aa</span>
+          </div>
+
+          <div class="theme-card__body">
+            <h3 class="theme-card__name">
+              {{ entry.name }}
+              {% if entry.key == active_theme_key %}<span class="theme-card__badge">In use</span>{% endif %}
+            </h3>
+            <p class="theme-card__description">{{ entry.description }}</p>
+            <p class="theme-card__meta">
+              {{ entry.key }} &mdash; {{ entry.roundness }} corners,
+              {{ entry.primary }} and {{ entry.secondary }}
+              {% if entry.builtin %}&mdash; built in{% endif %}
+            </p>
+          </div>
+
+          <div class="theme-card__actions">
+            {% if entry.key != active_theme_key %}
+              <form action="{% url 'recipes:theme-activate' entry.key %}" method="post">
+                {% csrf_token %}
+                <button class="btn" type="submit">Use this</button>
+              </form>
+            {% endif %}
+            {% if entry.builtin %}
+              <a class="btn btn--quiet" href="{% url 'recipes:theme-create' %}?from={{ entry.key }}">Copy to edit</a>
+            {% else %}
+              <a class="btn btn--quiet" href="{% url 'recipes:theme-edit' entry.key %}">Edit</a>
+              <a class="btn btn--quiet" href="{% url 'recipes:theme-delete' entry.key %}">Delete</a>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <p class="button-row">
+      <a class="btn btn--primary" href="{% url 'recipes:theme-create' %}">New theme</a>
+    </p>
+  </section>
+
+  <section class="fieldset">
+    <h2 class="legend-like">Accounts and the rest</h2>
+    <p class="field__help">
+      Users, passwords and anything structural live in the Django admin.
+      Database location, allowed hosts and the built-in themes are environment
+      variables and <code>crumbs/settings.py</code>; see the README.
+    </p>
+    <p class="button-row">
+      <a class="btn" href="{% url 'admin:index' %}">Open the admin</a>
+    </p>
+  </section>
+{% endblock %}

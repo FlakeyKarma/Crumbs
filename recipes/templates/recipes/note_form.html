@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>{{ page_title }}</h1>
+
+  <form method="post" enctype="multipart/form-data" novalidate id="note-form">
+    {% csrf_token %}
+
+    <div class="note-editor">
+      <div>
+        <fieldset class="fieldset">
+          <legend>The note</legend>
+          {% include "recipes/_field.html" with field=form.body %}
+          {% include "recipes/_field.html" with field=form.image %}
+          {% include "recipes/_field.html" with field=form.visibility %}
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend>Where it goes</legend>
+          <p class="field__help">
+            Themes show notes differently — as a shape you tap, a pane that
+            opens in place, or a panel beside the recipe. Placement and angle
+            are stored whichever theme you're using, so switching doesn't
+            lose them.
+          </p>
+          {% include "recipes/_field.html" with field=form.anchor_step %}
+          <div class="field-grid">
+            {% include "recipes/_field.html" with field=form.offset_x %}
+            {% include "recipes/_field.html" with field=form.offset_y %}
+            {% include "recipes/_field.html" with field=form.size %}
+            {% include "recipes/_field.html" with field=form.icon %}
+            {% include "recipes/_field.html" with field=form.rotation %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="note-preview" id="note-preview">
+        <div class="note-paper" data-paper="{{ appearance.paper }}" data-size="m">
+          <p class="note-paper__body" data-note-preview>Your note, at the angle you set.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save note</button>
+      <a class="btn btn--quiet" href="{{ recipe.get_absolute_url }}">Cancel</a>
+      {% if note %}
+        <a class="btn btn--danger" href="{% url 'recipes:note-delete' note.pk %}">Delete</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/note-preview.js' %}" defer></script>
+{% endblock %}

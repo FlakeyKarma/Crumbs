@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>{{ page_title }}</h1>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="nonfield-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <fieldset class="fieldset">
+      <legend>The recipe</legend>
+      {% include "recipes/_field.html" with field=form.title %}
+      {% include "recipes/_field.html" with field=form.summary %}
+      {% include "recipes/_field.html" with field=form.image %}
+
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.servings %}
+        {% include "recipes/_field.html" with field=form.serving_noun %}
+        {% include "recipes/_field.html" with field=form.prep_minutes %}
+        {% include "recipes/_field.html" with field=form.cook_minutes %}
+        {% include "recipes/_field.html" with field=form.difficulty %}
+      </div>
+
+      {% include "recipes/_field.html" with field=form.tags_text %}
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>Ingredients</legend>
+      {{ ingredient_formset.management_form }}
+      {% if ingredient_formset.non_form_errors %}
+        <div class="nonfield-errors">{{ ingredient_formset.non_form_errors }}</div>
+      {% endif %}
+
+      <datalist id="known-ingredients">
+        {% for name in known_ingredients %}<option value="{{ name }}"></option>{% endfor %}
+      </datalist>
+
+      <ul class="formset" id="ingredient-rows" data-prefix="ingredients">
+        {% for row_form in ingredient_formset %}
+          {% include "recipes/_ingredient_row.html" with form=row_form %}
+        {% endfor %}
+      </ul>
+
+      <template id="ingredient-blank">
+        {% include "recipes/_ingredient_row.html" with form=ingredient_formset.empty_form %}
+      </template>
+
+      <p><button class="btn" type="button" data-add-row="ingredient">Add another ingredient</button></p>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>Method</legend>
+      {{ step_formset.management_form }}
+      {% if step_formset.non_form_errors %}
+        <div class="nonfield-errors">{{ step_formset.non_form_errors }}</div>
+      {% endif %}
+
+      <ul class="formset" id="step-rows" data-prefix="steps">
+        {% for row_form in step_formset %}
+          {% include "recipes/_step_row.html" with form=row_form %}
+        {% endfor %}
+      </ul>
+
+      <template id="step-blank">
+        {% include "recipes/_step_row.html" with form=step_formset.empty_form %}
+      </template>
+
+      <p><button class="btn" type="button" data-add-row="step">Add another step</button></p>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>Keeping track</legend>
+      {% include "recipes/_field.html" with field=form.notes %}
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.source_name %}
+        {% include "recipes/_field.html" with field=form.source_url %}
+      </div>
+      {% include "recipes/_field.html" with field=form.is_shared inline=True %}
+    </fieldset>
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save recipe</button>
+      {% if recipe %}
+        <a class="btn btn--quiet" href="{{ recipe.get_absolute_url }}">Cancel</a>
+      {% else %}
+        <a class="btn btn--quiet" href="{% url 'recipes:list' %}">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/formset.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% comment %}
+Theme picker and lighting toggle, both real forms so they work without
+JavaScript. appearance.js repaints immediately and lets the POST catch up.
+{% endcomment %}
+<form class="appearance" action="{% url 'recipes:set-theme' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <label class="skip-link" for="theme-choice">Theme</label>
+  <select class="appearance__select" id="theme-choice" name="theme" data-theme-select>
+    {% for option in appearance_options %}
+      <option value="{{ option.key }}" data-theme-choice="{{ option.key }}"
+              {% if option.key == appearance.key %}selected{% endif %}>{{ option.name }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn--quiet" type="submit" data-theme-submit>Set</button>
+</form>
+
+<form class="appearance" action="{% url 'recipes:set-mode' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <input type="hidden" name="mode" value="{{ appearance.next_mode }}">
+  <button class="btn btn--quiet" type="submit" data-mode-toggle
+          aria-label="Lighting: {{ appearance.mode_pref }}">Lighting: {{ appearance.mode_pref }}</button>
+</form>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load recipe_extras %}
+
+{% block title %}
+  {% if active_tag %}{{ active_tag.name }} — {{ site.site_name }}
+  {% elif search_term %}{{ search_term }} — {{ site.site_name }}
+  {% else %}{{ site.site_name }}{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="index-head">
+    <div>
+      {% if active_tag %}
+        <h1>{{ active_tag.name }}</h1>
+        <p>{{ paginator.count }} recipe{{ paginator.count|pluralize }} tagged this way.</p>
+      {% elif search_term %}
+        <h1>{{ search_term }}</h1>
+        <p>{{ paginator.count }} match{{ paginator.count|pluralize:"es" }} in titles, ingredients, tags and notes.</p>
+      {% else %}
+        <h1>The recipe box</h1>
+        <p>{{ paginator.count }} recipe{{ paginator.count|pluralize }} on the shelf.</p>
+      {% endif %}
+    </div>
+
+    {% if recipes %}
+      <nav class="sorts" aria-label="Sort recipes">
+        {% for key, label in sorts %}
+          <a href="{% query_with sort=key %}" aria-current="{% if key == sort %}true{% else %}false{% endif %}">{{ label }}</a>
+        {% endfor %}
+      </nav>
+    {% endif %}
+  </div>
+
+  {% if popular_tags and not active_tag %}
+    <ul class="chips">
+      {% for tag in popular_tags %}
+        <li><a class="chip" href="{{ tag.get_absolute_url }}">{{ tag.name }} <span class="chip__count">{{ tag.uses }}</span></a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if recipes %}
+    <ul class="catalogue">
+      {% for recipe in recipes %}
+        <li class="entry">
+          {% if recipe.image %}
+            <img class="entry__thumb" src="{{ recipe.image.url }}" alt="" loading="lazy" width="72" height="72">
+          {% else %}
+            <span class="entry__thumb entry__initial" aria-hidden="true">{{ recipe.title|first|upper }}</span>
+          {% endif %}
+
+          <div>
+            <h2 class="entry__title"><a href="{{ recipe.get_absolute_url }}">{{ recipe.title }}</a></h2>
+            {% with trail=recipe.ingredient_trail %}
+              {% if trail %}
+                <p class="entry__trail">{{ trail }}</p>
+              {% elif recipe.summary %}
+                <p class="entry__trail">{{ recipe.summary|truncatewords:20 }}</p>
+              {% endif %}
+            {% endwith %}
+            {% if recipe.tags.all %}
+              <ul class="chips">
+                {% for tag in recipe.tags.all %}
+                  <li><a class="chip" href="{{ tag.get_absolute_url }}">{{ tag.name }}</a></li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <p class="entry__meta">
+            {% if recipe.total_minutes %}{{ recipe.total_minutes|duration }}<br>{% endif %}
+            {{ recipe.servings }} {{ recipe.serving_noun }}
+            {% if not recipe.is_shared %}<br><span class="entry__private">Private</span>{% endif %}
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if page_obj.has_other_pages %}
+      <nav class="pager" aria-label="Pages">
+        {% if page_obj.has_previous %}
+          <a href="{% query_with page=page_obj.previous_page_number %}">Newer</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="{% query_with page=page_obj.next_page_number %}">Older</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="empty">
+      {% if search_term or active_tag %}
+        <h2>Nothing matches that</h2>
+        <p>Try a single ingredient, or <a href="{% url 'recipes:list' %}">go back to everything</a>.</p>
+      {% elif user.is_authenticated %}
+        <h2>The box is empty</h2>
+        <p>Write down the thing you cook most often — you already know it by heart.</p>
+        <p><a class="btn btn--primary" href="{% url 'recipes:create' %}">Add the first recipe</a></p>
+      {% else %}
+        <h2>Nothing shared yet</h2>
+        <p><a href="{% url 'login' %}">Sign in</a> to see your own recipes and add new ones.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

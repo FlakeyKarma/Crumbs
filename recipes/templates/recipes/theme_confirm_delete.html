@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ theme.name }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>Delete the “{{ theme.name }}” theme?</h1>
+
+  {% if in_use %}
+    <p>This is the theme currently in use. Deleting it falls back to the
+       built-in theme of the same key if there is one, and otherwise to
+       whatever <code>CRUMBS_THEME</code> names in settings.</p>
+  {% else %}
+    <p>Nothing else refers to it. Recipes are unaffected.</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Delete it</button>
+      <a class="btn btn--quiet" href="{% url 'recipes:settings' %}">Keep it</a>
+    </div>
+  </form>
+{% endblock %}

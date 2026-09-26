@@ -1,0 +1,1172 @@
+/* Crumbs — see DESIGN-NOTES.md for the reasoning behind these choices. */
+
+:root {
+  --paper: #f1f3ef;
+  --surface: #ffffff;
+  --ink: #16232b;
+  --ink-soft: #4e6068;
+  --rule: #ccd4cf;
+  --rule-soft: #e2e7e2;
+  --jam: #8e2c3f;
+  --jam-deep: #6d2130;
+  --amber: #b6801c;
+  --on-primary: #ffffff;
+  --focus: #16232b;
+
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --measure: 34rem;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --radius: 3px;
+}
+
+/* Dark mode is an explicit attribute rather than a media query. The reader
+   can choose light, dark, or auto; auto is resolved to one of the two before
+   the first paint by the script in _appearance_boot.html, so the stylesheet
+   never has to reason about it. */
+:root[data-mode="dark"] {
+    --paper: #141a1c;
+    --surface: #1c2427;
+    --ink: #e7ece8;
+    --ink-soft: #9fb0b3;
+    --rule: #2f3b3e;
+    --rule-soft: #242e31;
+    --jam: #e0899a;
+    --jam-deep: #f0a5b3;
+    --amber: #e3b44a;
+    --on-primary: #15202a;
+    --focus: #e0899a;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  font-feature-settings: "kern";
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+a {
+  color: var(--jam);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--jam-deep);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  background: var(--surface);
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--ink);
+}
+
+/* --- Frame ---------------------------------------------------------- */
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.masthead__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0.9rem var(--gutter);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.wordmark:hover {
+  color: var(--jam);
+}
+
+.masthead__search {
+  flex: 1 1 14rem;
+  display: flex;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.masthead__nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.925rem;
+}
+
+.masthead__nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.masthead__nav a:hover,
+.masthead__nav a[aria-current="page"] {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.sheet {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) var(--gutter) 5rem;
+}
+
+.footer {
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  padding: 1.5rem var(--gutter);
+  text-align: center;
+}
+
+/* --- Controls -------------------------------------------------------- */
+
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="url"],
+input[type="password"],
+input[type="file"],
+select,
+textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.6rem;
+  width: 100%;
+  min-width: 0;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-size: 0.95rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+
+/* --on-primary is black or white, picked from the theme primary's luminance,
+   so a pale accent does not end up with white text on it. */
+.btn--primary {
+  background: var(--jam);
+  border-color: var(--jam);
+  color: var(--on-primary);
+}
+
+.btn--primary:hover {
+  background: var(--jam-deep);
+  border-color: var(--jam-deep);
+  color: var(--on-primary);
+}
+
+.btn--danger {
+  border-color: var(--jam);
+  color: var(--jam);
+}
+
+.btn--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-soft);
+  padding-inline: 0.35rem;
+}
+
+.btn--quiet:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+/* --- Messages -------------------------------------------------------- */
+
+.messages {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0.75rem var(--gutter) 0;
+  max-width: 64rem;
+}
+
+.messages li {
+  border-left: 3px solid var(--rule);
+  background: var(--surface);
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.messages li.good {
+  border-left-color: var(--jam);
+}
+
+.messages li.bad,
+.messages li.warn {
+  border-left-color: var(--amber);
+}
+
+/* --- Index ------------------------------------------------------------ */
+
+.index-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+}
+
+.index-head h1 {
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+}
+
+.index-head p {
+  margin: 0.35rem 0 0;
+  color: var(--ink-soft);
+}
+
+.sorts {
+  display: flex;
+  gap: 0.85rem;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.sorts a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.sorts a[aria-current="true"] {
+  color: var(--ink);
+  border-bottom: 2px solid var(--jam);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 0.85rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.12rem 0.65rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  background: var(--surface);
+}
+
+.chip:hover,
+.chip[aria-current="page"] {
+  border-color: var(--jam);
+  color: var(--jam);
+}
+
+.chip__count {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.catalogue {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  gap: 0 1.1rem;
+  align-items: start;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.entry__thumb {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.entry__initial {
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+}
+
+.entry__title {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  margin: 0;
+}
+
+.entry__title a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.entry__title a:hover {
+  color: var(--jam);
+  text-decoration: underline;
+}
+
+.entry__trail {
+  margin: 0.2rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  max-width: var(--measure);
+}
+
+.entry__meta {
+  text-align: right;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+}
+
+.entry__private {
+  color: var(--amber);
+}
+
+@media (max-width: 34rem) {
+  .entry {
+    grid-template-columns: 3rem 1fr;
+  }
+
+  .entry__thumb {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .entry__meta {
+    grid-column: 2;
+    text-align: left;
+    margin-top: 0.35rem;
+  }
+}
+
+.empty {
+  border: 1px dashed var(--rule);
+  padding: 2rem;
+  text-align: center;
+  color: var(--ink-soft);
+  margin-top: 1.5rem;
+}
+
+.empty h2 {
+  color: var(--ink);
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.pager {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+/* --- Recipe ------------------------------------------------------------ */
+
+.recipe-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.recipe-head--illustrated {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+
+@media (max-width: 46rem) {
+  .recipe-head--illustrated {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.recipe-head h1 {
+  font-size: clamp(2.1rem, 6vw, 3.4rem);
+}
+
+.recipe-head__summary {
+  margin: 0.75rem 0 0;
+  max-width: var(--measure);
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+
+.recipe-head__photo {
+  border-radius: var(--radius);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  width: 100%;
+}
+
+.factline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.factline strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.cook-sheet {
+  display: grid;
+  grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 5vw, 3.5rem);
+  margin-top: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 52rem) {
+  .cook-sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rail {
+  position: sticky;
+  top: 1.25rem;
+}
+
+@media (max-width: 52rem) {
+  .rail {
+    position: static;
+  }
+}
+
+.rail h2,
+.method h2 {
+  font-size: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.dial {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.9rem 0 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dial__step {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: var(--surface);
+}
+
+.dial__step:hover {
+  border-color: var(--jam);
+  color: var(--jam);
+}
+
+.dial__step[aria-disabled="true"] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.dial__value {
+  font-size: 1rem;
+}
+
+.dial__reset {
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+
+.ingredients {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+
+.ingredients__group {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 1.1rem 0 0.4rem;
+}
+
+.ingredient {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  gap: 0 0.6rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  align-items: baseline;
+}
+
+.ingredient__amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ingredient__what {
+  color: var(--ink);
+}
+
+.ingredient__prep,
+.ingredient__optional {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.method {
+  min-width: 0;
+}
+
+.steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 1.1rem 0 0;
+  padding: 0;
+}
+
+.step {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: 0 0.9rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.step::before {
+  content: counter(step);
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  color: var(--jam);
+  line-height: 1.3;
+}
+
+.step__text {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: 1.05rem;
+}
+
+.step__timer {
+  margin-top: 0.5rem;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  border-color: var(--rule);
+  color: var(--ink-soft);
+}
+
+.step__timer[data-running="true"] {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+.step.is-done .step__text,
+.step.is-done .step__timer {
+  opacity: 0.4;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.step.is-done::before {
+  opacity: 0.4;
+}
+
+.aside-block {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.aside-block h2 {
+  font-size: 1.15rem;
+  border: 0;
+  padding: 0;
+}
+
+.aside-block p {
+  max-width: var(--measure);
+  white-space: pre-line;
+}
+
+.recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.recipe-actions form {
+  display: inline;
+}
+
+.provenance {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin-left: auto;
+  text-align: right;
+}
+
+/* --- Cook mode --------------------------------------------------------- */
+
+body.cook-mode .masthead__search,
+body.cook-mode .masthead__nav,
+body.cook-mode .recipe-head__photo,
+body.cook-mode .recipe-head__summary,
+body.cook-mode .aside-block,
+body.cook-mode .footer,
+body.cook-mode .provenance {
+  display: none;
+}
+
+body.cook-mode .recipe-head h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+body.cook-mode .step__text {
+  font-size: 1.3rem;
+  line-height: 1.5;
+}
+
+body.cook-mode .step {
+  padding: 1.2rem 0;
+  cursor: pointer;
+}
+
+body.cook-mode .ingredient {
+  padding: 0.45rem 0;
+  font-size: 1.05rem;
+}
+
+body.cook-mode .cook-hint {
+  display: block;
+}
+
+.cook-hint {
+  display: none;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: 0.6rem 0 0;
+}
+
+/* --- Forms ------------------------------------------------------------- */
+
+.form-page {
+  max-width: 52rem;
+}
+
+.form-page h1 {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  margin-bottom: 1.5rem;
+}
+
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 2.25rem;
+}
+
+.fieldset > legend {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  padding: 0 0 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+  width: 100%;
+}
+
+.field {
+  margin-bottom: 1.1rem;
+}
+
+.field > label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.field__help {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-top: 0.25rem;
+}
+
+.field__errors {
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  color: var(--jam);
+  font-size: 0.88rem;
+}
+
+.field--inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field--inline input[type="checkbox"] {
+  width: auto;
+}
+
+.field--inline label {
+  margin: 0;
+  font-weight: 400;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0 1rem;
+}
+
+.formset {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formset-row {
+  display: grid;
+  gap: 0.5rem 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  align-items: end;
+}
+
+.formset-row--ingredient {
+  /* Two lines: the measurement on top, the qualifiers underneath. */
+  grid-template-columns: 5.5rem 6rem minmax(8rem, 2fr) minmax(7rem, 1.4fr) auto;
+}
+
+.formset-row--ingredient .cell--group {
+  grid-column: 1 / 4;
+}
+
+.formset-row--ingredient .cell--flag {
+  grid-column: 4 / -1;
+  align-self: center;
+}
+
+.formset-row--step {
+  grid-template-columns: minmax(0, 1fr) 6rem auto;
+}
+
+@media (max-width: 42rem) {
+  .formset-row--ingredient,
+  .formset-row--step {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .formset-row--ingredient .cell--name,
+  .formset-row--ingredient .cell--group,
+  .formset-row--step .cell--text {
+    grid-column: 1 / -1;
+  }
+
+  .formset-row--ingredient .cell--flag {
+    grid-column: auto;
+  }
+}
+
+.cell label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.2rem;
+}
+
+.cell--drop {
+  align-self: center;
+}
+
+.cell--drop label {
+  font-size: 0.78rem;
+}
+
+.formset-row.is-dropped {
+  opacity: 0.45;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.nonfield-errors {
+  border-left: 3px solid var(--jam);
+  background: var(--surface);
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-page {
+  max-width: 24rem;
+}
+
+/* --- Motion and print --------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .masthead,
+  .footer,
+  .recipe-actions,
+  .dial__step,
+  .dial__reset,
+  .step__timer,
+  .messages,
+  .cook-hint {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  .cook-sheet {
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+  }
+
+  .rail {
+    position: static;
+  }
+
+  .step {
+    break-inside: avoid;
+  }
+
+  a {
+    color: #000;
+    text-decoration: none;
+  }
+}
+
+/* --- Settings menu ------------------------------------------------------ */
+
+.legend-like {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  padding: 0 0 0.5rem;
+  margin: 0 0 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.theme-gallery {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.theme-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0 1.1rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  /* Each card is rounded to its own theme's radius, so the gallery shows you
+     the shape as well as the colours. */
+  border-radius: var(--card-radius, var(--radius));
+}
+
+.theme-card.is-active {
+  border-color: var(--jam);
+  box-shadow: inset 3px 0 0 var(--jam);
+}
+
+.theme-card__swatches {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.theme-card__chip {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--card-radius, var(--radius));
+  font-size: 0.8rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.theme-card__chip--dark {
+  /* Shown against a dark ground, because that is where it will be used. */
+  outline: 3px solid #141a1c;
+  outline-offset: -3px;
+}
+
+.theme-card__name {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.theme-card__badge {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--jam);
+  border: 1px solid var(--jam);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.theme-card__description {
+  margin: 0.2rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  max-width: var(--measure);
+}
+
+.theme-card__meta {
+  margin: 0.3rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.theme-card__actions form {
+  display: inline;
+}
+
+@media (max-width: 42rem) {
+  .theme-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .theme-card__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    margin-top: 0.7rem;
+  }
+}
+
+.theme-preview {
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.theme-preview__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.theme-preview__link {
+  font-size: 0.95rem;
+}
+
+.theme-preview__timer {
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.8rem;
+}
+
+.theme-preview__contrast[data-ok="false"] {
+  color: var(--jam);
+}
+
+/* A colour input renders as a swatch, so it should not stretch across the
+   column the way a text input does. */
+input[type="color"] {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  width: 4.5rem;
+  height: 2.4rem;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+
+/* --- Appearance controls in the header --------------------------------- */
+
+.appearance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.appearance__select {
+  width: auto;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+  color: var(--ink-soft);
+}
+
+.appearance__select:hover,
+.appearance__select:focus {
+  color: var(--ink);
+}
+
+/* Recipe-level notes need a box to be positioned inside; step-level ones
+   use the step itself. Height comes from the icons, which are absolute, so
+   it needs a floor or the anchor collapses to nothing. */
+.note-anchor--recipe {
+  min-height: 3rem;
+  margin-top: 0.75rem;
+}

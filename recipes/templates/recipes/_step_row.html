@@ -1,0 +1,22 @@
+{% comment %}One row of the step formset. Also used for the blank template row.{% endcomment %}
+<li class="formset-row formset-row--step">
+  {{ form.id }}
+  <div class="cell cell--text">
+    <label for="{{ form.text.id_for_label }}">What to do</label>
+    {{ form.text }}
+  </div>
+  <div class="cell">
+    <label for="{{ form.minutes.id_for_label }}">Timer, minutes</label>
+    {{ form.minutes }}
+  </div>
+  <div class="cell cell--drop">
+    <label for="{{ form.DELETE.id_for_label }}">{{ form.DELETE }} Remove</label>
+  </div>
+  {% if form.errors %}
+    <ul class="field__errors" style="grid-column: 1 / -1">
+      {% for field_errors in form.errors.values %}
+        {% for error in field_errors %}<li>{{ error }}</li>{% endfor %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+</li>

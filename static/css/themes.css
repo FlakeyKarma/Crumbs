@@ -1,0 +1,497 @@
+/* The six full themes.
+ *
+ * Loaded after crumbs.css, which owns the layout and the default (Classic)
+ * palette. Everything here is keyed off two attributes on <html>:
+ *
+ *   data-theme="woods"   which theme
+ *   data-mode="dark"     resolved light or dark — never "auto"; the pre-paint
+ *                        script in _appearance_boot.html turns auto into one
+ *                        of the two before the first frame
+ *   data-season="autumn" Woods only
+ *
+ * Each theme sets the same custom properties crumbs.css already reads, plus a
+ * few of its own, so the layout never needs to know which theme is on. The
+ * structural sections at the bottom are the exceptions — the handful of
+ * places where a theme genuinely changes the shape of something rather than
+ * its colour.
+ *
+ * Palettes were checked for contrast when they were designed; the twelve
+ * light/dark pairs have not had a full audit. See README.
+ */
+
+/* --- Shared additions to the token set ---------------------------------- */
+
+:root {
+  --surface-2: var(--paper);
+  --rule-strong: var(--rule);
+  --accent-2: var(--ink-soft);
+  --shadow: none;
+  --radius-lg: var(--radius);
+  --nav-gap: 1rem;
+}
+
+/* ======================================================================== */
+/* Corporate — flat colour, square corners, ruled lines                     */
+/* ======================================================================== */
+
+[data-theme="corporate"] {
+  --paper: #e9ecef;
+  --surface: #ffffff;
+  --surface-2: #f3f5f7;
+  --ink: #12171d;
+  --ink-soft: #56616d;
+  --rule: #c2c9d1;
+  --rule-soft: #d8dee4;
+  --rule-strong: #8c97a3;
+  --jam: #1f4e79;
+  --jam-deep: #163a5a;
+  --on-primary: #ffffff;
+  --accent-2: #4a5764;
+  --amber: #9a3412;
+  --focus: #1f4e79;
+  --shadow: none;
+  --radius: 0px;
+  --radius-lg: 0px;
+  --serif: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+[data-theme="corporate"][data-mode="dark"] {
+  --paper: #11151a;
+  --surface: #1a2027;
+  --surface-2: #222a33;
+  --ink: #e4e9ee;
+  --ink-soft: #96a2ae;
+  --rule: #303a45;
+  --rule-soft: #262f38;
+  --rule-strong: #4c5a68;
+  --jam: #6ba3d6;
+  --jam-deep: #8bbbe6;
+  --on-primary: #0b0e12;
+  --accent-2: #93a1b0;
+  --amber: #e08a5f;
+  --focus: #6ba3d6;
+}
+
+/* A rule across the top of every panel, and no rounding anywhere. */
+[data-theme="corporate"] .entry,
+[data-theme="corporate"] .theme-card,
+[data-theme="corporate"] .fieldset > legend {
+  border-top-color: var(--jam);
+}
+
+[data-theme="corporate"] .theme-card {
+  border-top: 3px solid var(--jam);
+}
+
+[data-theme="corporate"] .chip {
+  border-radius: 0;
+}
+
+/* ======================================================================== */
+/* Artsy — a shape and a colour per menu item, cycling together             */
+/* ======================================================================== */
+
+[data-theme="artsy"] {
+  --paper: #fcfbf7;
+  --surface: #ffffff;
+  --surface-2: #f7f3ea;
+  --ink: #1d1a2e;
+  --ink-soft: #625c7a;
+  --rule: #ddd6ea;
+  --rule-soft: #ebe6f3;
+  --rule-strong: #6a4c93;
+  --jam: #6a4c93;
+  --jam-deep: #533a75;
+  --on-primary: #ffffff;
+  --accent-2: #2a9d8f;
+  --amber: #ce3d35;  /* darkened from #e8453c: 3.79:1 on this ground */
+  --focus: #6a4c93;
+  --shadow: 6px 6px 0 #ddd6ea;
+  --radius: 0px;
+  --radius-lg: 2px;
+  --serif: "Bricolage Grotesque", "Work Sans", system-ui, sans-serif;
+  --sans: "Work Sans", system-ui, sans-serif;
+
+  --art-1: #6a4c93;
+  --art-2: #e8453c;
+  --art-3: #2a9d8f;
+  --art-4: #a8760a;
+  --art-5: #d1325b;
+  --art-6: #2f5fd0;
+}
+
+[data-theme="artsy"][data-mode="dark"] {
+  --paper: #15121f;
+  --surface: #211c33;
+  --surface-2: #2b2442;
+  --ink: #f3f0ff;
+  --ink-soft: #a89fc4;
+  --rule: #392f55;
+  --rule-soft: #2d2545;
+  --rule-strong: #b892ff;
+  --jam: #b892ff;
+  --jam-deep: #cdb0ff;
+  --on-primary: #15121f;
+  --accent-2: #5fd6c4;
+  --amber: #ff6b61;
+  --focus: #b892ff;
+  --shadow: 6px 6px 0 #0f0d17;
+
+  --art-1: #b892ff;
+  --art-2: #ff6b61;
+  --art-3: #5fd6c4;
+  --art-4: #ffd166;
+  --art-5: #ff85a8;
+  --art-6: #6fa8ff;
+}
+
+/* Shape and colour cycle together, so the third menu item is the same
+   lozenge in the same teal on every page. nth-of-type, not nth-child: the
+   header also holds the theme picker's forms. */
+[data-theme="artsy"] .masthead__nav a,
+[data-theme="artsy"] .masthead__nav button {
+  border: 2px solid var(--art-1);
+  color: var(--art-1);
+  padding: 0.35rem 1rem;
+  text-decoration: none;
+  border-radius: 999px;
+}
+
+[data-theme="artsy"] .masthead__nav a:nth-of-type(2) {
+  border-color: var(--art-2);
+  color: var(--art-2);
+  border-radius: 0;
+  clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
+  padding-inline: 1.3rem;
+}
+
+[data-theme="artsy"] .masthead__nav a:nth-of-type(3) {
+  border-color: var(--art-3);
+  color: var(--art-3);
+  border-radius: 999px 4px 999px 4px;
+}
+
+[data-theme="artsy"] .masthead__nav a:nth-of-type(4) {
+  border-color: var(--art-4);
+  color: var(--art-4);
+  border-radius: 4px 999px 4px 999px;
+}
+
+[data-theme="artsy"] .masthead__nav a:nth-of-type(5) {
+  border-color: var(--art-5);
+  color: var(--art-5);
+  border-radius: 0;
+}
+
+[data-theme="artsy"] .masthead__nav a[aria-current="page"] {
+  background: var(--art-1);
+  color: var(--paper);
+}
+
+[data-theme="artsy"] .theme-card,
+[data-theme="artsy"] .empty {
+  border: 2px solid var(--rule-strong);
+  box-shadow: var(--shadow);
+}
+
+/* ======================================================================== */
+/* Cutesy — pink, white, and everything rounded                             */
+/* ======================================================================== */
+
+[data-theme="cutesy"] {
+  --paper: #fff4f8;
+  --surface: #ffffff;
+  --surface-2: #fff0f5;
+  --ink: #4a2b39;
+  --ink-soft: #8d6074;
+  --rule: #ffd6e4;
+  --rule-soft: #ffe7ef;
+  --rule-strong: #f4a9c5;
+  /* Darkened twice. #d4557f failed white button text at 4.2:1; #c04b73
+     fixed that but was still 4.35:1 as a link on this pink ground. */
+  --jam: #b34169;
+  --jam-deep: #963457;
+  --on-primary: #ffffff;
+  --accent-2: #8b5bbf;
+  --amber: #926804;  /* darkened from #b07d05: 3.38:1 */
+  --focus: #b34169;
+  --shadow: 0 6px 18px rgba(192, 75, 115, 0.16);
+  --radius: 14px;
+  --radius-lg: 22px;
+  --serif: "Quicksand", system-ui, sans-serif;
+  --sans: "Quicksand", system-ui, sans-serif;
+}
+
+[data-theme="cutesy"][data-mode="dark"] {
+  --paper: #241820;
+  --surface: #32222c;
+  --surface-2: #3d2a36;
+  --ink: #ffe8f1;
+  --ink-soft: #d0a4b8;
+  --rule: #4c3341;
+  --rule-soft: #3c2833;
+  --rule-strong: #7c4f65;
+  --jam: #ff9dc0;
+  --jam-deep: #ffb8d2;
+  --on-primary: #2b1a23;
+  --accent-2: #c9a0f0;
+  --amber: #ffd166;
+  --focus: #ff9dc0;
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="cutesy"] .masthead__nav a[aria-current="page"],
+[data-theme="cutesy"] .btn--primary {
+  border-radius: 999px;
+}
+
+[data-theme="cutesy"] .theme-card,
+[data-theme="cutesy"] .entry__thumb {
+  box-shadow: var(--shadow);
+}
+
+/* ======================================================================== */
+/* Vaporwave — neon in the dark, flat in the light                          */
+/* ======================================================================== */
+
+[data-theme="vaporwave"] {
+  --paper: #f1e9ff;
+  --surface: #ffffff;
+  --surface-2: #f7f1ff;
+  --ink: #1b0a33;
+  --ink-soft: #5a3a8a;
+  --rule: #9d4edd;
+  --rule-soft: #d9c2f2;
+  --rule-strong: #6c1fc4;
+  --jam: #6a1fb0;
+  --jam-deep: #551793;
+  --on-primary: #f9f871;
+  --accent-2: #005b8a;
+  --amber: #7a5a00;
+  --focus: #6a1fb0;
+  --shadow: 4px 4px 0 #9d4edd;
+  --radius: 2px;
+  --radius-lg: 2px;
+  --serif: "Chakra Petch", "IBM Plex Sans", system-ui, sans-serif;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+[data-theme="vaporwave"][data-mode="dark"] {
+  --paper: #0d0221;
+  --surface: #190634;
+  --surface-2: #230b47;
+  --ink: #f6ecff;
+  --ink-soft: #b18fe0;
+  --rule: #b14aff;
+  --rule-soft: #3a1063;
+  --rule-strong: #00e5ff;
+  /* Yellow-on-purple is the theme's signature, and in dark mode it could not
+     survive on the button: the purple had to lighten to 4.5:1 as a link
+     against a near-black page, and yellow on a purple that light reads at
+     2.8:1. The signature moves to the headings, which sit on the page rather
+     than on the fill and keep it at 16:1. */
+  --jam: #b06ce8;
+  --jam-deep: #c78bf2;
+  --on-primary: #16032b;
+  --accent-2: #00e5ff;
+  --amber: #ffe94a;
+  --focus: #00e5ff;
+  --shadow: 0 0 0 1px #b14aff, 0 0 18px rgba(177, 74, 255, 0.45);
+}
+
+/* Yellow on purple for headings and fills — the "text contrasts its
+   placement" idea applied where it reads, not to body copy where it
+   wouldn't. Glow is dark-mode only. */
+[data-theme="vaporwave"] h2,
+[data-theme="vaporwave"] .rail h2,
+[data-theme="vaporwave"] .method h2,
+[data-theme="vaporwave"] .fieldset > legend {
+  color: var(--amber);
+  letter-spacing: 0.06em;
+}
+
+[data-theme="vaporwave"] .masthead__nav a {
+  border: 1px solid var(--accent-2);
+  color: var(--accent-2);
+  padding: 0.3rem 0.8rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+[data-theme="vaporwave"][data-mode="dark"] .btn--primary,
+[data-theme="vaporwave"][data-mode="dark"] .theme-card.is-active {
+  box-shadow: var(--shadow);
+}
+
+/* ======================================================================== */
+/* Woods — bark down the left of every panel, palette follows the season    */
+/* ======================================================================== */
+
+[data-theme="woods"] {
+  --paper: #f7f1e4;
+  --surface: #fdfaf3;
+  --surface-2: #f0e7d4;
+  --ink: #2a2114;
+  --ink-soft: #6b5b3e;
+  --rule: #ddcba6;
+  --rule-soft: #ebe0c9;
+  --rule-strong: #6b5240;
+  --jam: #a1490f;
+  --jam-deep: #82390a;
+  --on-primary: #ffffff;
+  --accent-2: #6b5240;
+  --amber: #876812;  /* 4.49:1 before, just under the floor */
+  --focus: #a1490f;
+  --shadow: 0 2px 10px rgba(42, 33, 20, 0.12);
+  --radius: 3px;
+  --radius-lg: 10px;
+  --serif: "Alegreya", Georgia, serif;
+  --sans: "Bitter", Georgia, serif;
+
+  --bark: #6b5240;
+  --bark-dark: #4a3728;
+  --leaf: #b5541a;
+}
+
+[data-theme="woods"][data-mode="dark"] {
+  --paper: #1a1611;
+  --surface: #241e16;
+  --surface-2: #2e261c;
+  --ink: #efe6d6;
+  --ink-soft: #b3a288;
+  --rule: #453a2b;
+  --rule-soft: #372e22;
+  --rule-strong: #8a6a51;
+  --jam: #d2762f;
+  --jam-deep: #e08e4e;
+  --on-primary: #1a1611;
+  --accent-2: #8a6a51;
+  --amber: #e8bb4e;
+  --focus: #d2762f;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+
+  --bark: #8a6a51;
+  --bark-dark: #33251a;
+  --leaf: #d2762f;
+}
+
+/* Only the foliage changes with the season; the bark does not. Autumn is the
+   base palette above, so it needs no override. */
+[data-theme="woods"][data-season="spring"] { --leaf: #6a9a3a; }
+[data-theme="woods"][data-season="summer"] { --leaf: #2f7d32; }
+[data-theme="woods"][data-season="winter"] { --leaf: #7f96a3; }
+[data-theme="woods"][data-mode="dark"][data-season="spring"] { --leaf: #8fbf55; }
+[data-theme="woods"][data-mode="dark"][data-season="summer"] { --leaf: #57a45c; }
+[data-theme="woods"][data-mode="dark"][data-season="winter"] { --leaf: #9db4c2; }
+
+/* The trunk: bark grain up the left edge of a panel, foliage at the top.
+   Panels, not layout columns — real trunk-shaped columns would mean
+   restructuring the page rather than restyling it. */
+[data-theme="woods"] .rail,
+[data-theme="woods"] .theme-card,
+[data-theme="woods"] .empty,
+[data-theme="woods"] .note-paper {
+  position: relative;
+  padding-left: 2.2rem;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+
+[data-theme="woods"] .rail::before,
+[data-theme="woods"] .theme-card::before,
+[data-theme="woods"] .empty::before,
+[data-theme="woods"] .note-paper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  border-right: 1px solid var(--bark-dark);
+  background:
+    linear-gradient(180deg, var(--leaf) 0, var(--leaf) 14px, transparent 14px),
+    repeating-linear-gradient(90deg,
+      var(--bark-dark) 0 2px, var(--bark) 2px 5px, var(--bark-dark) 5px 6px);
+}
+
+[data-theme="woods"] .masthead__nav a[aria-current="page"] {
+  border-bottom: 3px solid var(--leaf);
+}
+
+/* ======================================================================== */
+/* Warm Retro — a 1970s kitchen                                             */
+/* ======================================================================== */
+
+[data-theme="warm-retro"] {
+  --paper: #f4e7cd;
+  --surface: #fffaf0;
+  --surface-2: #f8eed9;
+  --ink: #3a2413;
+  --ink-soft: #75563a;
+  --rule: #c9a97a;
+  --rule-soft: #e0cba6;
+  --rule-strong: #8a5a25;
+  --jam: #a8480c;
+  --jam-deep: #8a3a09;
+  --on-primary: #fff6e6;
+  --accent-2: #5c6a22;
+  --amber: #8a6106;
+  --focus: #a8480c;
+  --shadow: 0 3px 0 #8a5a25;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --serif: "Bree Serif", Georgia, serif;
+  --sans: "Karla", system-ui, sans-serif;
+}
+
+[data-theme="warm-retro"][data-mode="dark"] {
+  --paper: #221710;
+  --surface: #2f2017;
+  --surface-2: #3a2920;
+  --ink: #f6e4c6;
+  --ink-soft: #c0a27c;
+  --rule: #54402d;
+  --rule-soft: #453324;
+  --rule-strong: #8a6a45;
+  --jam: #e8873f;
+  --jam-deep: #f0a061;
+  --on-primary: #221710;
+  --accent-2: #a3b34a;
+  --amber: #e8b84b;
+  --focus: #e8873f;
+  --shadow: 0 3px 0 #140d08;
+}
+
+/* A hard offset shadow rather than a blur — the way a printed label sits. */
+[data-theme="warm-retro"] .theme-card,
+[data-theme="warm-retro"] .empty,
+[data-theme="warm-retro"] .btn--primary {
+  border: 2px solid var(--rule-strong);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="warm-retro"] .masthead__nav a[aria-current="page"] {
+  background: var(--amber);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 0.25rem 0.8rem;
+}
+
+/* ======================================================================== */
+/* Shared: things every full theme inherits from its own tokens             */
+/* ======================================================================== */
+
+[data-theme]:not([data-theme="classic"]) .entry__thumb,
+[data-theme]:not([data-theme="classic"]) .recipe-head__photo {
+  border-radius: var(--radius-lg);
+}
+
+[data-theme]:not([data-theme="classic"]) .masthead {
+  background: var(--surface);
+  border-bottom-color: var(--rule);
+}
+
+[data-theme]:not([data-theme="classic"]) .messages li,
+[data-theme]:not([data-theme="classic"]) .chip {
+  background: var(--surface-2);
+}

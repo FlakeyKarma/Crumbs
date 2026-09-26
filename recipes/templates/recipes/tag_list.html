@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Tags — {{ site.site_name }}{% endblock %}
+
+{% block content %}
+  <div class="index-head">
+    <div>
+      <h1>Tags</h1>
+      <p>Every label in use, most-used first.</p>
+    </div>
+  </div>
+
+  {% if tags %}
+    <ul class="chips">
+      {% for tag in tags %}
+        <li><a class="chip" href="{{ tag.get_absolute_url }}">{{ tag.name }} <span class="chip__count">{{ tag.uses }}</span></a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty">
+      <h2>No tags yet</h2>
+      <p>Tags appear here as soon as a recipe uses one.</p>
+    </div>
+  {% endif %}
+{% endblock %}

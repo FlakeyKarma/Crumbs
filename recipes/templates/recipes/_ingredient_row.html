@@ -1,0 +1,37 @@
+{% comment %}One row of the ingredient formset. Also used for the blank template row.{% endcomment %}
+<li class="formset-row formset-row--ingredient">
+  {{ form.id }}
+  <div class="cell">
+    <label for="{{ form.quantity.id_for_label }}">Amount</label>
+    {{ form.quantity }}
+  </div>
+  <div class="cell">
+    <label for="{{ form.unit.id_for_label }}">Unit</label>
+    {{ form.unit }}
+  </div>
+  <div class="cell cell--name">
+    <label for="{{ form.name.id_for_label }}">Ingredient</label>
+    {{ form.name }}
+  </div>
+  <div class="cell">
+    <label for="{{ form.preparation.id_for_label }}">Preparation</label>
+    {{ form.preparation }}
+  </div>
+  <div class="cell cell--drop">
+    <label for="{{ form.DELETE.id_for_label }}">{{ form.DELETE }} Remove</label>
+  </div>
+  <div class="cell cell--group">
+    <label for="{{ form.group.id_for_label }}">Group heading, if this belongs to a component</label>
+    {{ form.group }}
+  </div>
+  <div class="cell cell--flag">
+    <label for="{{ form.is_optional.id_for_label }}">{{ form.is_optional }} Optional</label>
+  </div>
+  {% if form.errors %}
+    <ul class="field__errors" style="grid-column: 1 / -1">
+      {% for field_errors in form.errors.values %}
+        {% for error in field_errors %}<li>{{ error }}</li>{% endfor %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+</li>

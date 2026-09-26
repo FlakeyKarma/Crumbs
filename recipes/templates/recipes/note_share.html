@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Sharing a note — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>Who can read this note?</h1>
+  <p class="field__help">
+    On “{{ note.recipe.title }}”. Private notes are yours alone until you add
+    someone here; adding the first person makes it shared, and removing the
+    last makes it private again.
+  </p>
+
+  <div class="note-preview">
+    {% include "recipes/_note.html" with note=note %}
+  </div>
+
+  {% if shares %}
+    <ul class="note-shares">
+      {% for share in shares %}
+        <li>
+          <span>{{ share.user.get_username }}</span>
+          <form method="post">
+            {% csrf_token %}
+            <button class="btn btn--quiet" type="submit" name="remove" value="{{ share.user.pk }}">Remove</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="field__help">Not shared with anyone yet.</p>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "recipes/_field.html" with field=form.username %}
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Share it</button>
+      <a class="btn btn--quiet" href="{{ note.recipe.get_absolute_url }}">Done</a>
+    </div>
+  </form>
+{% endblock %}

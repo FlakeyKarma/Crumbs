@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>{{ page_title }}</h1>
+
+  <form method="post" novalidate id="theme-form">
+    {% csrf_token %}
+
+    <fieldset class="fieldset">
+      <legend>What it is</legend>
+      {% include "recipes/_field.html" with field=form.name %}
+      {% include "recipes/_field.html" with field=form.key %}
+      {% include "recipes/_field.html" with field=form.description %}
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>How it looks</legend>
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.primary %}
+        {% include "recipes/_field.html" with field=form.secondary %}
+        {% include "recipes/_field.html" with field=form.roundness %}
+      </div>
+
+      <div class="theme-preview" id="theme-preview">
+        <p class="field__help">Preview</p>
+        <div class="theme-preview__row">
+          <button class="btn btn--primary" type="button" disabled>Save recipe</button>
+          <button class="btn" type="button" disabled>Cook mode</button>
+          <span class="chip">weeknight</span>
+          <a class="theme-preview__link" href="#theme-preview">a link</a>
+          <span class="theme-preview__timer">12:00 left</span>
+        </div>
+        <p class="field__help theme-preview__contrast" data-contrast-note></p>
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>Overrides</legend>
+      <p class="field__help">
+        Leave these blank and they're worked out from the two colours above:
+        the hover shade, lighter versions for dark mode, and whether text on a
+        primary button should be black or white. Fill one in to pin it.
+      </p>
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.primary_hover %}
+        {% include "recipes/_field.html" with field=form.primary_dark %}
+        {% include "recipes/_field.html" with field=form.primary_dark_hover %}
+        {% include "recipes/_field.html" with field=form.secondary_dark %}
+        {% include "recipes/_field.html" with field=form.on_primary %}
+        {% include "recipes/_field.html" with field=form.on_primary_dark %}
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save theme</button>
+      <a class="btn btn--quiet" href="{% url 'recipes:settings' %}">Cancel</a>
+      {% if theme %}
+        <a class="btn btn--danger" href="{% url 'recipes:theme-delete' theme.key %}">Delete</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/theme-preview.js' %}" defer></script>
+{% endblock %}

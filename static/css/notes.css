@@ -1,0 +1,410 @@
+/* Sticky notes.
+ *
+ * One note renders the same everywhere — paper, ruling, polaroid frame — and
+ * the theme decides only *how it arrives*: as an icon that expands, a pane
+ * that overlays the recipe, or a panel that splits the screen. That split
+ * keeps note content mode-agnostic, so a note written under Cutesy still
+ * makes sense under Corporate.
+ *
+ * Paper treatment comes from data-paper on the note (sticky / ruled / grid),
+ * which the theme supplies. Placement mode comes from data-note-mode on the
+ * container.
+ */
+
+/* --- The paper ---------------------------------------------------------- */
+
+.note-paper {
+  --note-line: color-mix(in srgb, var(--ink) 16%, transparent);
+  --note-width: 17rem;
+
+  position: relative;
+  box-sizing: border-box;
+  width: var(--note-width);
+  max-width: 100%;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.14));
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+/* Sizes are relative, never pixel dimensions: a note placed on a laptop
+   should not swallow a phone. */
+.note-paper[data-size="s"] { --note-width: min(13rem, 70vw); }
+.note-paper[data-size="m"] { --note-width: min(17rem, 80vw); }
+.note-paper[data-size="l"] { --note-width: min(24rem, 90vw); }
+
+/* A torn square of sticky pad: no border, a slight lift, a folded corner. */
+.note-paper[data-paper="sticky"] {
+  border: 0;
+  background:
+    linear-gradient(225deg, transparent 0 14px, var(--surface-2, var(--surface)) 14px),
+    var(--surface-2, var(--surface));
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.note-paper[data-paper="sticky"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+/* Ruled paper: lines behind the text, aligned to the line height so the
+   writing sits on them instead of floating between them. */
+.note-paper[data-paper="ruled"] .note-paper__body {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.55em - 1px),
+    var(--note-line) calc(1.55em - 1px),
+    var(--note-line) 1.55em
+  );
+  line-height: 1.55em;
+}
+
+/* Graph paper. */
+.note-paper[data-paper="grid"] .note-paper__body {
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 calc(1.55em - 1px),
+      var(--note-line) calc(1.55em - 1px) 1.55em),
+    repeating-linear-gradient(to right, transparent 0 calc(1.55em - 1px),
+      var(--note-line) calc(1.55em - 1px) 1.55em);
+  line-height: 1.55em;
+}
+
+.note-paper__body {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.note-paper__meta {
+  margin: 0.7rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--rule-soft, var(--rule));
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.note-paper__meta a {
+  font-size: 0.78rem;
+}
+
+/* Creator notes are visually distinct from your own, because in icon mode
+   they can sit on the same anchor and you need to know whose is whose. */
+.note-paper[data-origin="recipe"] {
+  border-left: 4px solid var(--jam);
+}
+
+.note-paper[data-paper="sticky"][data-origin="recipe"] {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18), inset 4px 0 0 var(--jam);
+}
+
+/* --- Pictures: a polaroid, not a thumbnail ------------------------------ */
+
+.note-photo {
+  display: block;
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.6rem 2.2rem;
+  background: #fbfaf6;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+.note-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #ddd;
+}
+
+.note-photo figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #3a3a3a;
+  text-align: center;
+  /* The handwritten line under a polaroid. Falls back cleanly. */
+  font-family: var(--serif);
+}
+
+/* --- Icon mode ---------------------------------------------------------- */
+
+.note-anchor {
+  position: relative;
+}
+
+.note-icon {
+  position: absolute;
+  z-index: 3;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: var(--jam);
+  color: var(--on-primary);
+  /* The whole button rotates, so a rotated triangle pulses on its own axis
+     rather than on an upright one. */
+  transform: translate(-50%, -50%) rotate(var(--note-rotation, 0deg));
+  transform-origin: center;
+}
+
+.note-icon[data-shape="circle"] { border-radius: 50%; }
+.note-icon[data-shape="square"] { border-radius: 2px; }
+.note-icon[data-shape="diamond"] { border-radius: 2px; rotate: 45deg; }
+.note-icon[data-shape="triangle"] { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.note-icon[data-shape="star"] {
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
+                     50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.note-icon[data-shape="pin"] {
+  border-radius: 50% 50% 50% 0;
+}
+
+.note-icon[data-origin="recipe"] {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+/* Unread notes pulse; tapping one stops it for the rest of this cook. */
+.note-icon[data-read="false"] {
+  animation: note-pulse 1.9s ease-in-out infinite;
+}
+
+@keyframes note-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50% { box-shadow: 0 0 0 0.5rem transparent; opacity: 0.72; }
+}
+
+.note-icon__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* The expanded note grows out of the icon's own coordinates and inherits its
+   rotation, upside down included. */
+.note-popover {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%) rotate(var(--note-rotation, 0deg));
+  transform-origin: center;
+  transition: opacity 120ms ease, scale 120ms ease;
+}
+
+.note-popover[hidden] {
+  display: none;
+}
+
+.note-popover[data-opening="true"] {
+  opacity: 0;
+  scale: 0.85;
+}
+
+/* --- Overlay mode ------------------------------------------------------- */
+
+.note-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px dashed var(--rule-strong, var(--rule));
+  border-radius: var(--radius);
+  background: var(--surface-2, var(--surface));
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-align: left;
+}
+
+.note-tab[data-read="false"]::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--jam);
+  animation: note-pulse 1.9s ease-in-out infinite;
+}
+
+.note-tab:hover {
+  color: var(--ink);
+  border-color: var(--jam);
+}
+
+/* Overlay notes open in flow, pushing the recipe down rather than covering
+   it — you are reading both at once, and a pane over the step you are on is
+   the wrong trade in a kitchen. */
+.note-overlay {
+  margin: 0.6rem 0 0.2rem;
+}
+
+.note-overlay[hidden] {
+  display: none;
+}
+
+/* --- Split mode --------------------------------------------------------- */
+
+.note-split {
+  position: fixed;
+  z-index: 40;
+  inset: 0 0 0 50%;
+  background: var(--surface-2, var(--surface));
+  border-left: 1px solid var(--rule);
+  padding: 1.5rem;
+  overflow-y: auto;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.16);
+}
+
+.note-split[hidden] {
+  display: none;
+}
+
+@media (max-width: 46rem) {
+  /* Half the width is unusable on a phone, so the split goes horizontal. */
+  .note-split {
+    inset: 50% 0 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.16);
+  }
+}
+
+.note-split__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.note-split__head h2 {
+  font-size: 1.2rem;
+}
+
+.note-split__list {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* In split mode the pane is already half the screen, so a "large" note has
+   nowhere to grow. Size degrades to full width rather than overflowing. */
+.note-split .note-paper {
+  --note-width: 100%;
+}
+
+/* --- Editing ------------------------------------------------------------ */
+
+.note-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 48rem) {
+  .note-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.note-preview {
+  position: sticky;
+  top: 1.25rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  min-height: 14rem;
+  overflow: hidden;
+}
+
+.note-preview .note-paper {
+  transform: rotate(var(--note-rotation, 0deg));
+}
+
+.note-shares {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.note-shares li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+/* --- Motion and print --------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Flatten rotation without touching the stored value, and stop the pulse.
+     An upside-down note is a feature; being unable to turn it off is not. */
+  .note-icon,
+  .note-popover,
+  .note-preview .note-paper {
+    --note-rotation: 0deg !important;
+  }
+
+  .note-icon[data-read="false"],
+  .note-tab[data-read="false"]::before {
+    animation: none;
+  }
+}
+
+@media print {
+  /* Paper doesn't expand. Every readable note prints, flat and in order. */
+  .note-icon,
+  .note-tab,
+  .note-split__head button {
+    display: none !important;
+  }
+
+  .note-popover,
+  .note-overlay,
+  .note-split {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .note-paper {
+    --note-width: 100%;
+    box-shadow: none;
+  }
+}

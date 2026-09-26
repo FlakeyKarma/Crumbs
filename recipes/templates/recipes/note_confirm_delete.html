@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Delete note — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>Peel this note off?</h1>
+  <p>On “{{ note.recipe.title }}”{% if note.anchor_step %}, at step {{ note.anchor_step.position|add:1 }}{% endif %}.</p>
+
+  <div class="note-preview">
+    {% include "recipes/_note.html" with note=note %}
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Delete it</button>
+      <a class="btn btn--quiet" href="{{ note.recipe.get_absolute_url }}">Keep it</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% comment %}One labelled form field with help text and errors.{% endcomment %}
+<div class="field {% if inline %}field--inline{% endif %}">
+  {% if inline %}{{ field }}{% endif %}
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {% if not inline %}{{ field }}{% endif %}
+  {% if field.help_text %}<span class="field__help">{{ field.help_text }}</span>{% endif %}
+  {% if field.errors %}
+    <ul class="field__errors">
+      {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+</div>

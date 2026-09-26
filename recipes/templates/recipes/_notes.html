@@ -1,0 +1,57 @@
+{% comment %}
+Places the notes for one anchor according to the theme's note mode.
+
+  icon     a rotatable shape at the note's coordinates, expanding in place
+  overlay  a row of tabs; opening one pushes the note into the flow
+  split    nothing here — every note goes in the side panel instead
+
+`notes` is the list for this anchor; `appearance.note_mode` decides the shape.
+{% endcomment %}
+{% if notes %}
+  {% if appearance.note_mode == "icon" %}
+    {% for note in notes %}
+      <button type="button"
+              class="note-icon"
+              data-note-id="{{ note.pk }}"
+              data-shape="{{ note.icon }}"
+              data-origin="{{ note.visibility }}"
+              data-read="false"
+              aria-expanded="false"
+              aria-controls="note-panel-{{ note.pk }}"
+              style="left: {{ note.offset_x }}%; top: {{ note.offset_y }}%;
+                     --note-rotation: {{ note.rotation }}deg">
+        <span class="note-icon__label">Note: {{ note.summary }}</span>
+      </button>
+
+      <div class="note-popover"
+           id="note-panel-{{ note.pk }}"
+           data-note-panel="{{ note.pk }}"
+           style="left: {{ note.offset_x }}%; top: {{ note.offset_y }}%;
+                  --note-rotation: {{ note.rotation }}deg"
+           hidden>
+        {% include "recipes/_note.html" with note=note %}
+      </div>
+    {% endfor %}
+
+  {% elif appearance.note_mode == "overlay" %}
+    <ul class="note-strip">
+      {% for note in notes %}
+        <li>
+          <button type="button"
+                  class="note-tab"
+                  data-note-id="{{ note.pk }}"
+                  data-read="false"
+                  aria-expanded="false"
+                  aria-controls="note-panel-{{ note.pk }}">
+            {{ note.summary }}
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+    {% for note in notes %}
+      <div class="note-overlay" id="note-panel-{{ note.pk }}" data-note-panel="{{ note.pk }}" hidden>
+        {% include "recipes/_note.html" with note=note %}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endif %}

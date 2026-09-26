@@ -1,0 +1,50 @@
+{% comment %}
+Runs before the first paint, which is the whole point: the server cannot know
+whether this browser prefers dark, so if the reader chose "auto" the page
+would otherwise flash the wrong palette. Inline and synchronous on purpose.
+
+Resolution order, as decided: the reader's explicit choice, then the browser's
+own colour-scheme setting, then the clock. The clock is only reached when the
+browser reports no preference at all.
+{% endcomment %}
+<script>
+(function () {
+  var html = document.documentElement;
+  var pref = "{{ appearance.mode_pref|escapejs }}";
+  var mode = pref;
+
+  if (pref !== "light" && pref !== "dark") {
+    var ask = window.matchMedia;
+    if (ask && ask("(prefers-color-scheme: dark)").matches) {
+      mode = "dark";
+    } else if (ask && ask("(prefers-color-scheme: light)").matches) {
+      mode = "light";
+    } else {
+      var hour = new Date().getHours();
+      mode = (hour < {{ appearance.day_starts }} || hour >= {{ appearance.day_ends }}) ? "dark" : "light";
+    }
+  }
+  html.setAttribute("data-mode", mode);
+
+  {% if appearance.seasonal %}
+  // Season follows the reader's own calendar and hemisphere, not the
+  // server's timezone. Calendar season only — a reader in Singapore gets a
+  // northern season that means nothing where they are, which needs a
+  // latitude to fix and we deliberately don't ask for one.
+  try {
+    var zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    var southern = /^(Australia\/|Antarctica\/|Indian\/|Pacific\/(Auckland|Chatham|Fiji|Port_Moresby)|America\/(Argentina\/|Santiago|Sao_Paulo|Montevideo|La_Paz|Asuncion|Lima)|Africa\/(Johannesburg|Windhoek|Harare|Lusaka|Maputo|Nairobi))/.test(zone);
+    var north = ["winter", "winter", "spring", "spring", "spring", "summer",
+                 "summer", "summer", "autumn", "autumn", "autumn", "winter"];
+    var season = north[new Date().getMonth()];
+    if (southern) {
+      season = {winter: "summer", spring: "autumn",
+                summer: "winter", autumn: "spring"}[season];
+    }
+    html.setAttribute("data-season", season);
+  } catch (e) {
+    /* Leave the server's guess in place. */
+  }
+  {% endif %}
+})();
+</script>

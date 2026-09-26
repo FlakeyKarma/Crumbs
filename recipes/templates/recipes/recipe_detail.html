@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load static recipe_extras %}
+
+{% block title %}{{ recipe.title }} — {{ site.site_name }}{% endblock %}
+{% block description %}{{ recipe.summary|default:recipe.title|truncatewords:26 }}{% endblock %}
+
+{% block content %}
+  <article data-notes data-cook-session="{{ cook_session }}">
+    <header class="recipe-head {% if recipe.image %}recipe-head--illustrated{% endif %}">
+      <div>
+        <h1>{{ recipe.title }}</h1>
+        {% if recipe.summary %}
+          <p class="recipe-head__summary">{{ recipe.summary }}</p>
+        {% endif %}
+
+        <ul class="factline">
+          {% if recipe.prep_minutes %}<li>Prep <strong>{{ recipe.prep_minutes|duration }}</strong></li>{% endif %}
+          {% if recipe.cook_minutes %}<li>Cook <strong>{{ recipe.cook_minutes|duration }}</strong></li>{% endif %}
+          <li>Makes <strong>{{ recipe.servings }} {{ recipe.serving_noun }}</strong></li>
+          <li>{{ recipe.get_difficulty_display }}</li>
+          {% if recipe.times_cooked %}
+            <li>Made <strong>{{ recipe.times_cooked }}&times;</strong>{% if recipe.last_cooked %}, last on {{ recipe.last_cooked|date:"j M Y" }}{% endif %}</li>
+          {% endif %}
+        </ul>
+
+        {% if recipe.tags.all %}
+          <ul class="chips">
+            {% for tag in recipe.tags.all %}
+              <li><a class="chip" href="{{ tag.get_absolute_url }}">{{ tag.name }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+
+      {% if recipe.image %}
+        <img class="recipe-head__photo" src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+      {% endif %}
+    </header>
+
+    {% if recipe_notes %}
+      <div class="note-anchor note-anchor--recipe">
+        {% include "recipes/_notes.html" with notes=recipe_notes %}
+      </div>
+    {% endif %}
+
+    <div class="cook-sheet">
+      <section class="rail" aria-labelledby="ingredients-heading">
+        <h2 id="ingredients-heading">Ingredients</h2>
+
+        <div class="dial">
+          <a class="dial__step" href="?servings={{ fewer_servings }}"
+             {% if servings <= 1 %}aria-disabled="true" tabindex="-1"{% endif %}
+             aria-label="Fewer servings" rel="nofollow">&minus;</a>
+          <span class="dial__value">{{ servings }} {{ recipe.serving_noun }}</span>
+          <a class="dial__step" href="?servings={{ more_servings }}"
+             aria-label="More servings" rel="nofollow">+</a>
+          {% if is_scaled %}
+            <a class="dial__reset" href="{{ recipe.get_absolute_url }}">Reset to {{ recipe.servings }}</a>
+          {% endif %}
+        </div>
+
+        {% if is_scaled %}
+          <p class="field__help">Scaled to {{ scale_percent }}% of the written amounts.</p>
+        {% endif %}
+
+        {% for heading, rows in ingredient_groups %}
+          {% if heading %}<h3 class="ingredients__group">{{ heading }}</h3>{% endif %}
+          <ul class="ingredients">
+            {% for row in rows %}
+              <li class="ingredient">
+                <span class="ingredient__amount">{{ row.quantity }}{% if row.unit %} {{ row.unit }}{% endif %}</span>
+                <span class="ingredient__what">{{ row.name }}{% if row.preparation %}<span class="ingredient__prep">, {{ row.preparation }}</span>{% endif %}{% if row.is_optional %} <span class="ingredient__optional">(optional)</span>{% endif %}</span>
+              </li>
+            {% empty %}
+              <li class="ingredient"><span class="ingredient__what">No ingredients listed yet.</span></li>
+            {% endfor %}
+          </ul>
+        {% empty %}
+          <p class="field__help">No ingredients listed yet.</p>
+        {% endfor %}
+      </section>
+
+      <section class="method" aria-labelledby="method-heading">
+        <h2 id="method-heading">Method</h2>
+        <p class="cook-hint">Tap a step to cross it off. Your screen will stay awake.</p>
+
+        <ol class="steps" id="steps">
+          {% for step in recipe.steps.all %}
+            <li class="step note-anchor">
+              <div>
+                <p class="step__text">{{ step.text|linebreaksbr }}</p>
+                {% if step.minutes %}
+                  <button class="btn step__timer" type="button" data-timer-minutes="{{ step.minutes }}">
+                    Start {{ step.minutes|duration }}
+                  </button>
+                {% endif %}
+                {% with step_notes=notes_by_step|get_item:step.pk %}
+                  {% include "recipes/_notes.html" with notes=step_notes %}
+                {% endwith %}
+              </div>
+            </li>
+          {% empty %}
+            <li class="step"><div><p class="step__text">No steps written down yet.</p></div></li>
+          {% endfor %}
+        </ol>
+
+        {% if recipe.notes %}
+          <div class="aside-block">
+            <h2>Notes</h2>
+            <p>{{ recipe.notes }}</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    {% if appearance.note_mode == "split" and all_notes %}
+      <div class="note-split" hidden>
+        <div class="note-split__head">
+          <h2 tabindex="-1">Notes</h2>
+          <button class="btn btn--quiet" type="button" data-note-split-close>Close</button>
+        </div>
+        <ul class="note-split__list">
+          {% for note in all_notes %}
+            <li data-note-id="{{ note.pk }}">
+              {% if note.anchor_step %}
+                <p class="field__help">At step {{ note.anchor_step.position|add:1 }}</p>
+              {% endif %}
+              {% include "recipes/_note.html" with note=note %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="recipe-actions">
+      <button class="btn" type="button" id="cook-mode-toggle" aria-pressed="false">Cook mode</button>
+      {% if appearance.note_mode == "split" and all_notes %}
+        <button class="btn" type="button" data-note-split-open>Notes ({{ all_notes|length }})</button>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'recipes:note-create' recipe.slug %}">Add a note</a>
+      {% endif %}
+      <button class="btn btn--quiet" type="button" onclick="window.print()">Print</button>
+
+      {% if can_edit %}
+        <form action="{% url 'recipes:mark-cooked' recipe.slug %}" method="post">
+          {% csrf_token %}
+          <button class="btn" type="submit">I made this today</button>
+        </form>
+      {% endif %}
+
+      {% if can_edit %}
+        <a class="btn" href="{% url 'recipes:edit' recipe.slug %}">Edit</a>
+        <a class="btn btn--danger" href="{% url 'recipes:delete' recipe.slug %}">Delete</a>
+      {% endif %}
+
+      <p class="provenance">
+        {% if recipe.source_url %}
+          From <a href="{{ recipe.source_url }}" rel="noopener noreferrer nofollow">{{ recipe.source_name|default:"the original" }}</a><br>
+        {% elif recipe.source_name %}
+          From {{ recipe.source_name }}<br>
+        {% endif %}
+        Written down by {{ recipe.author.get_username }}, {{ recipe.created_at|date:"j M Y" }}
+      </p>
+    </div>
+  </article>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/cook.js' %}" defer></script>
+  <script src="{% static 'js/notes.js' %}" defer></script>
+{% endblock %}
