@@ -52,7 +52,11 @@
         {% include "recipes/_ingredient_row.html" with form=ingredient_formset.empty_form %}
       </template>
 
-      <p><button class="btn" type="button" data-add-row="ingredient">Add another ingredient</button></p>
+      <p class="button-row">
+        <button class="btn btn--add" type="button" data-ingredient-picker-open
+                aria-label="Search for an ingredient">+</button>
+        <button class="btn" type="button" data-add-row="ingredient">Add a blank row</button>
+      </p>
     </fieldset>
 
     <fieldset class="fieldset">
@@ -94,8 +98,11 @@
       {% endif %}
     </div>
   </form>
+
+  {% include "recipes/_picker_dialogs.html" %}
 {% endblock %}
 
 {% block scripts %}
   <script src="{% static 'js/formset.js' %}" defer></script>
+  <script src="{% static 'js/pickers.js' %}" defer></script>
 {% endblock %}

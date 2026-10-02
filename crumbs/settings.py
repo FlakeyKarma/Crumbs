@@ -36,6 +36,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "recipes",
+    "pantry",
+    "health",
+    "nutrition",
 ]
 
 MIDDLEWARE = [
@@ -191,6 +194,18 @@ CRUMBS_THEMES = {
 #: Which profile is in use. Unknown names fall back to the first one defined.
 CRUMBS_THEME = os.environ.get("CRUMBS_THEME", "enamel")
 
+
+# --- The Pantry -------------------------------------------------------------
+#
+# A user's FoodData Central key is theirs, not ours, so it is encrypted at
+# rest. Set this to something of its own: with it unset the key is derived
+# from SECRET_KEY, which means rotating SECRET_KEY silently invalidates every
+# stored API key. Recoverable — each user pastes theirs again — but it should
+# not be a surprise, so `manage.py check` warns while the fallback is in use.
+#
+#   python -c "import secrets; print(secrets.token_urlsafe(48))"
+
+PANTRY_ENCRYPTION_KEY = os.environ.get("CRUMBS_PANTRY_KEY", "")
 
 # --- Messages ---------------------------------------------------------------
 

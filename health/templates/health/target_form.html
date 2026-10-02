@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>{{ page_title }}</h1>
+  {% if current %}
+    <p class="field__help">
+      Currently {{ current.describe }}, since {{ current.effective_from|date:"j M Y" }}.
+      Saving closes that and starts a new one — it isn't overwritten.
+    </p>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="fieldset">
+      <legend>{{ metric.name }}{% if metric.unit %}, in {{ metric.unit }}{% endif %}</legend>
+      {% include "recipes/_field.html" with field=form.mode %}
+      {% include "recipes/_field.html" with field=form.basis %}
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.lower %}
+        {% include "recipes/_field.html" with field=form.upper %}
+        {% include "recipes/_field.html" with field=form.cadence %}
+        {% include "recipes/_field.html" with field=form.effective_from %}
+      </div>
+      {% include "recipes/_field.html" with field=form.note %}
+    </fieldset>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save target</button>
+      <a class="btn btn--quiet" href="{% url 'health:targets' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

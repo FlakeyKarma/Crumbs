@@ -5,12 +5,12 @@
 {% block description %}{{ recipe.summary|default:recipe.title|truncatewords:26 }}{% endblock %}
 
 {% block content %}
-  <article data-notes data-cook-session="{{ cook_session }}">
+  <article data-notes data-cook-session="{{ cook_session }}" data-recipe="{{ recipe.slug }}">
     <header class="recipe-head {% if recipe.image %}recipe-head--illustrated{% endif %}">
       <div>
         <h1>{{ recipe.title }}</h1>
         {% if recipe.summary %}
-          <p class="recipe-head__summary">{{ recipe.summary }}</p>
+          <p class="recipe-head__summary">{% with_references recipe.summary reference_bindings reference_library %}</p>
         {% endif %}
 
         <ul class="factline">
@@ -78,19 +78,26 @@
         {% empty %}
           <p class="field__help">No ingredients listed yet.</p>
         {% endfor %}
+
+        {% include "recipes/_nutrition.html" %}
       </section>
 
       <section class="method" aria-labelledby="method-heading">
         <h2 id="method-heading">Method</h2>
         <p class="cook-hint">Tap a step to cross it off. Your screen will stay awake.</p>
 
-        <ol class="steps" id="steps">
+        <ol class="steps" id="steps"
+            data-recipe-title="{{ recipe.title }}"
+            data-recipe-url="{{ recipe.get_absolute_url }}">
           {% for step in recipe.steps.all %}
-            <li class="step note-anchor">
+            <li class="step note-anchor" id="step-{{ forloop.counter }}">
               <div>
-                <p class="step__text">{{ step.text|linebreaksbr }}</p>
+                <p class="step__text">{% with_references step.text reference_bindings reference_library %}</p>
                 {% if step.minutes %}
-                  <button class="btn step__timer" type="button" data-timer-minutes="{{ step.minutes }}">
+                  <button class="btn step__timer" type="button"
+                          data-timer-minutes="{{ step.minutes }}"
+                          data-timer-step="{{ forloop.counter }}"
+                          data-timer-id="{{ recipe.slug }}:{{ forloop.counter }}">
                     Start {{ step.minutes|duration }}
                   </button>
                 {% endif %}
@@ -104,10 +111,40 @@
           {% endfor %}
         </ol>
 
+        {% if reference_portions %}
+          <div class="aside-block">
+            <h2>Your choices</h2>
+            <p class="field__help">
+              Worked out from this recipe's own amounts, so the same food in a
+              recipe calling for 250&nbsp;g and one calling for 2&nbsp;tbsp
+              comes out as two different portions.
+            </p>
+            <ul class="portions">
+              {% for row in reference_portions %}
+                <li class="portion {% if row.problem %}portion--gap{% endif %}">
+                  <span class="portion__what">
+                    <strong>{{ row.reference }}</strong>
+                    &rarr; {{ row.chosen.source }}
+                  </span>
+                  {% if row.amount %}
+                    <span class="portion__amount">
+                      {{ row.line.quantity|floatformat:"-2" }}{% if row.line.unit %} {{ row.line.get_unit_display }}{% endif %}
+                      = {{ row.amount|floatformat:"-1" }} {{ row.chosen.source_food.reference_unit.symbol }}
+                      {% if row.energy %}<span class="field__help">{{ row.energy|floatformat:0 }} kcal</span>{% endif %}
+                    </span>
+                  {% else %}
+                    <span class="portion__amount">{{ row.problem }}</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
         {% if recipe.notes %}
           <div class="aside-block">
             <h2>Notes</h2>
-            <p>{{ recipe.notes }}</p>
+            <p>{% with_references recipe.notes reference_bindings reference_library %}</p>
           </div>
         {% endif %}
       </section>
@@ -138,7 +175,9 @@
         <button class="btn" type="button" data-note-split-open>Notes ({{ all_notes|length }})</button>
       {% endif %}
       {% if user.is_authenticated %}
-        <a class="btn" href="{% url 'recipes:note-create' recipe.slug %}">Add a note</a>
+        {# Falls back to the full page form when the dialog cannot open. #}
+        <a class="btn" href="{% url 'recipes:note-create' recipe.slug %}"
+           data-note-dialog-open>Add a note</a>
       {% endif %}
       <button class="btn btn--quiet" type="button" onclick="window.print()">Print</button>
 
@@ -164,9 +203,14 @@
       </p>
     </div>
   </article>
+
+  {% if note_form %}{% include "recipes/_note_dialog.html" %}{% endif %}
+  {% if user.is_authenticated %}{% include "recipes/_picker_dialogs.html" %}{% endif %}
+  {% if placing_note %}{% include "recipes/_note_placing.html" %}{% endif %}
 {% endblock %}
 
 {% block scripts %}
   <script src="{% static 'js/cook.js' %}" defer></script>
   <script src="{% static 'js/notes.js' %}" defer></script>
+  <script src="{% static 'js/pickers.js' %}" defer></script>
 {% endblock %}

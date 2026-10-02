@@ -2,7 +2,7 @@
 #
 #   make install    set up from a fresh clone
 #   make run        start the development server
-#   make health     is this installation sound?
+#   make health     is this installation sound?  (the check, not the app)
 #
 # `make` on its own lists everything. Overrides go on the command line:
 #
@@ -11,6 +11,8 @@
 #
 # Assumes bash and a POSIX environment — Linux, macOS, WSL or Termux. On
 # Windows without WSL, use the commands in the README directly.
+#
+# Targeting a different interpreter: make install PYTHON=python3.12
 
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
@@ -28,7 +30,7 @@ PIP    := $(BIN)/pip
 MANAGE := $(PY) manage.py
 URL    := http://$(HOST):$(PORT)
 
-.PHONY: help install run health smoke test check audit migrate superuser seed static clean reset require-venv
+.PHONY: help install run health smoke test check doctor repair audit migrate superuser seed static clean reset require-venv
 
 # ---------------------------------------------------------------------------
 # Setting up
@@ -38,28 +40,30 @@ $(PY):
 	@echo "Creating $(VENV)"
 	$(PYTHON) -m venv $(VENV)
 
-install: $(PY)  ## Create the virtualenv, install dependencies, build the database
+install: $(PY)  ## Create the virtual environment, install dependencies, build the database
 	@$(PIP) install --upgrade pip --quiet
 	$(PIP) install -r requirements.txt
 	# No migrations are committed, so the first run is where the schema is
 	# created. On later runs this is a no-op unless the models changed.
-	$(MANAGE) makemigrations recipes
+	$(MANAGE) makemigrations recipes pantry health nutrition
 	$(MANAGE) migrate
 	echo
 	echo "Installed. Next: 'make superuser', then 'make seed' and 'make run'."
 
 require-venv:
-	@test -x $(PY) || { echo "No virtualenv yet. Run 'make install' first."; exit 1; }
+	@test -x $(PY) || { echo "No virtual environment yet. Run 'make install' first."; exit 1; }
 
 migrate: require-venv  ## Apply any outstanding migrations
-	@$(MANAGE) makemigrations recipes
+	@$(MANAGE) makemigrations recipes pantry health nutrition
 	$(MANAGE) migrate
 
 superuser: require-venv  ## Create an administrator account
 	@$(MANAGE) createsuperuser
 
-seed: require-venv  ## Load the three starter recipes
+seed: require-venv  ## Load the starter recipes and the built-in health metrics
 	@$(MANAGE) seed_recipes --shared
+	$(MANAGE) seed_health_metrics
+	$(MANAGE) seed_nutrition
 
 static: require-venv  ## Collect static files for a real deployment
 	@$(MANAGE) collectstatic --noinput
@@ -82,12 +86,21 @@ test: require-venv  ## Run the test suite
 check: require-venv  ## Django system checks, including the theme validation
 	@$(MANAGE) check
 
+doctor: require-venv  ## Why the database and the code disagree
+	@$(MANAGE) doctor
+
+repair: require-venv  ## Add columns migrate cannot, when doctor says to
+	@$(MANAGE) repair_schema
+	$(MANAGE) doctor --quiet
+
 audit: require-venv  ## Production readiness check — expect complaints while DEBUG is on
 	@CRUMBS_DEBUG=0 $(MANAGE) check --deploy
 
 health: require-venv  ## Full check: configuration, migrations, and a live server
 	@echo "==> configuration"
 	$(MANAGE) check
+	@echo "==> database and schema"
+	$(MANAGE) doctor --quiet
 	@echo "==> models match migrations"
 	$(MANAGE) makemigrations --check --dry-run
 	@echo "==> migrations applied"
@@ -98,6 +111,8 @@ health: require-venv  ## Full check: configuration, migrations, and a live serve
 smoke: require-venv  ## Same as health, but starts and stops its own server
 	@echo "==> configuration"
 	$(MANAGE) check
+	@echo "==> database and schema"
+	$(MANAGE) doctor --quiet
 	@echo "==> models match migrations"
 	$(MANAGE) makemigrations --check --dry-run
 	@echo "==> migrations applied"
@@ -134,6 +149,8 @@ CHECKS = [
     ("/accounts/login/", {200}, "sign-in page renders"),
     ("/settings/", {302}, "settings menu is behind a sign-in"),
     ("/admin/login/", {200}, "admin is reachable"),
+    ("/pantry/", {302}, "the pantry is behind a sign-in"),
+    ("/health/", {302}, "the health panel is behind a sign-in"),
     ("/r/definitely-not-a-recipe/", {404}, "missing recipes 404 rather than 500"),
 ]
 

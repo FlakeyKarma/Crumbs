@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Panel settings — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>Panel settings</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="fieldset">
+      <legend>What the panel shows</legend>
+      {% include "recipes/_field.html" with field=form.show_metrics %}
+      {% include "recipes/_field.html" with field=form.movement_metric %}
+      {% include "recipes/_field.html" with field=form.weight_smoothing_days %}
+      {% include "recipes/_field.html" with field=form.week_starts_monday inline=True %}
+    </fieldset>
+    <fieldset class="fieldset">
+      <legend>Movement and calories</legend>
+      <p class="field__help">
+        Off by default. Wearable burn estimates run high, and feeding a rough
+        number straight into the day's allowance compounds the error — which
+        is what the ratio is for.
+      </p>
+      {% include "recipes/_field.html" with field=form.offset_energy_with_movement inline=True %}
+      {% include "recipes/_field.html" with field=form.offset_ratio %}
+    </fieldset>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save</button>
+      <a class="btn btn--quiet" href="{% url 'health:panel' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

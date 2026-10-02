@@ -1,0 +1,57 @@
+{% comment %}
+Writing a note without leaving the recipe.
+
+A real <dialog>: it is hidden until opened, so with JavaScript off the
+"Add a note" link beside it simply navigates to the full-page form instead.
+The form posts normally — no fetch — and the view redirects back here with
+?place=<id>, which is what starts placement mode.
+{% endcomment %}
+<dialog class="note-dialog" id="note-dialog" aria-labelledby="note-dialog-title">
+  <form method="post" action="{% url 'recipes:note-create' recipe.slug %}"
+        enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="note-dialog__head">
+      <h2 id="note-dialog-title">Add a note</h2>
+      <button class="btn btn--quiet" type="button" data-note-dialog-close aria-label="Close">&times;</button>
+    </div>
+
+    <div class="note-dialog__body">
+      {% include "recipes/_field.html" with field=note_form.body %}
+      {% include "recipes/_field.html" with field=note_form.image %}
+
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=note_form.anchor_step %}
+        {% include "recipes/_field.html" with field=note_form.visibility %}
+      </div>
+
+      <fieldset class="fieldset">
+        <legend>How it looks</legend>
+        <div class="field-grid">
+          {% include "recipes/_field.html" with field=note_form.icon %}
+          {% include "recipes/_field.html" with field=note_form.colour %}
+          {% include "recipes/_field.html" with field=note_form.size %}
+        </div>
+      </fieldset>
+
+      {% comment %}
+        Placement is a drag on the next screen, so the numbers are folded
+        away rather than removed — they are still the only way to do it
+        with a keyboard on a page where the drag has not loaded.
+      {% endcomment %}
+      <details class="nutrient-group">
+        <summary>Place it by number instead</summary>
+        <div class="field-grid">
+          {% include "recipes/_field.html" with field=note_form.offset_x %}
+          {% include "recipes/_field.html" with field=note_form.offset_y %}
+          {% include "recipes/_field.html" with field=note_form.rotation %}
+        </div>
+      </details>
+    </div>
+
+    <div class="note-dialog__actions">
+      <button class="btn btn--primary" type="submit">Save, then place it</button>
+      <button class="btn btn--quiet" type="button" data-note-dialog-close>Cancel</button>
+    </div>
+  </form>
+</dialog>

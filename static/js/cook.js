@@ -69,58 +69,71 @@
 
   // --- Timers -------------------------------------------------------------
   //
-  // Driven by a deadline rather than by counting ticks, so a 45 minute roast
-  // is still accurate after the phone has spent half of it asleep.
+  // The countdown itself belongs to timers.js, which keeps it in
+  // localStorage so it survives leaving this page. All this file does is
+  // start and cancel one, and keep the step's own button showing the time.
 
-  var running = new WeakMap();
+  var steps = document.getElementById("steps");
+  var recipeTitle = steps ? steps.dataset.recipeTitle || "" : "";
+  var recipeUrl = steps ? steps.dataset.recipeUrl || "" : "";
+  var timerButtons = document.querySelectorAll("[data-timer-minutes]");
 
-  function clockFace(totalSeconds) {
-    var minutes = Math.floor(totalSeconds / 60);
-    var seconds = totalSeconds % 60;
-    return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-  }
+  if (window.CrumbsTimers && timerButtons.length) {
+    var Timers = window.CrumbsTimers;
 
-  function attachTimer(button) {
-    var minutes = parseInt(button.dataset.timerMinutes, 10);
-    var idleLabel = button.textContent.trim();
+    Array.prototype.forEach.call(timerButtons, function (button) {
+      var idle = button.textContent.trim();
+      button.dataset.idleLabel = idle;
 
-    function stop() {
-      var state = running.get(button);
-      if (state) window.clearInterval(state.interval);
-      running.delete(button);
-      button.dataset.running = "false";
-    }
-
-    function tick(deadline) {
-      var remaining = Math.round((deadline - Date.now()) / 1000);
-      if (remaining <= 0) {
-        stop();
-        button.textContent = "Time's up — tap to restart";
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        return;
-      }
-      button.textContent = clockFace(remaining) + " left";
-    }
-
-    button.addEventListener("click", function () {
-      if (running.has(button)) {
-        stop();
-        button.textContent = idleLabel;
-        return;
-      }
-      var deadline = Date.now() + minutes * 60 * 1000;
-      button.dataset.running = "true";
-      tick(deadline);
-      running.set(button, {
-        interval: window.setInterval(function () {
-          tick(deadline);
-        }, 1000)
+      button.addEventListener("click", function () {
+        var id = button.dataset.timerId;
+        if (Timers.find(id)) {
+          Timers.cancel(id);
+          return;
+        }
+        Timers.start({
+          id: id,
+          minutes: parseInt(button.dataset.timerMinutes, 10),
+          recipeTitle: recipeTitle,
+          recipeUrl: recipeUrl,
+          step: button.dataset.timerStep
+        });
       });
     });
+
+    function repaint() {
+      Array.prototype.forEach.call(timerButtons, function (button) {
+        var timer = Timers.find(button.dataset.timerId);
+        if (!timer) {
+          button.dataset.running = "false";
+          button.textContent = button.dataset.idleLabel;
+          return;
+        }
+        var left = Timers.remaining(timer);
+        button.dataset.running = left > 0 ? "true" : "false";
+        button.textContent = left > 0
+          ? Timers.clockFace(left) + " left"
+          : "Time's up — tap to restart";
+      });
+    }
+
+    // Subscribing covers changes — started here, cancelled from the dock, or
+    // cancelled in another tab. The interval covers the clock simply running
+    // down, which changes nothing in the store and so publishes nothing.
+    Timers.subscribe(repaint);
+    window.setInterval(repaint, 1000);
   }
 
-  var timerButtons = document.querySelectorAll("[data-timer-minutes]");
-  for (var i = 0; i < timerButtons.length; i++) {
-    attachTimer(timerButtons[i]);
+  // --- Coming back from the dock -------------------------------------------
+  //
+  // "Back to the recipe" links to ?cook=1#step-N, so arriving that way should
+  // land in cook mode at that step rather than at the top of an ordinary page.
+
+  if (toggle && /[?&]cook=1(&|$)/.test(window.location.search)) {
+    toggle.click();
+    var target = window.location.hash && document.querySelector(window.location.hash);
+    if (target && target.scrollIntoView) {
+      target.scrollIntoView({ block: "center" });
+    }
   }
 })();

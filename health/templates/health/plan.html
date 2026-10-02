@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>{{ page_title }}</h1>
+
+  <p class="field__help">
+    Calories and macros are two views of one thing — grams times four, four
+    and nine. Setting both by hand means keeping two numbers that can
+    disagree, so pick the one you decided and the other is worked out from it.
+  </p>
+
+  <h2 class="legend-like">The published splits</h2>
+  <p class="field__help">
+    Shown so they can be compared before one is picked. None of them sums to
+    exactly 100% at either end — that is how they are published, and the
+    range only works because the low shares add to less than 100 and the high
+    ones to more.
+  </p>
+  <div class="table-scroll">
+    <table class="datatable">
+      <caption>Percentage of daily calories.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Split</th>
+          <th scope="col" class="datatable__num">Protein</th>
+          <th scope="col" class="datatable__num">Carbs</th>
+          <th scope="col" class="datatable__num">Fat</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for preset in presets %}
+          <tr>
+            <td class="datatable__wide">{{ preset.label }}</td>
+            <td class="datatable__num">{{ preset.shares.protein.0 }}–{{ preset.shares.protein.1 }}%</td>
+            <td class="datatable__num">{{ preset.shares.carbohydrate.0 }}–{{ preset.shares.carbohydrate.1 }}%</td>
+            <td class="datatable__num">{{ preset.shares.fat.0 }}–{{ preset.shares.fat.1 }}%</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="nonfield-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <fieldset class="fieldset">
+      <legend>Which do you set?</legend>
+      {% include "recipes/_field.html" with field=form.mode %}
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>Calories</legend>
+      <p class="field__help">
+        Used when you set calories and let the macros follow.
+      </p>
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.energy_lower %}
+        {% include "recipes/_field.html" with field=form.energy_upper %}
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend>The split</legend>
+      {% include "recipes/_field.html" with field=form.split %}
+
+      <details class="nutrient-group" {% if plan.split == "custom" %}open{% endif %}>
+        <summary>My own percentages</summary>
+        <div class="field-grid">
+          {% include "recipes/_field.html" with field=form.protein_lower %}
+          {% include "recipes/_field.html" with field=form.protein_upper %}
+          {% include "recipes/_field.html" with field=form.carbohydrate_lower %}
+          {% include "recipes/_field.html" with field=form.carbohydrate_upper %}
+          {% include "recipes/_field.html" with field=form.fat_lower %}
+          {% include "recipes/_field.html" with field=form.fat_upper %}
+        </div>
+        <p class="field__help">
+          The lowest shares have to add up to 100% or less, and the highest to
+          100% or more. Otherwise there is no way to hit every one of them at
+          once, and the panel would show targets nobody can meet.
+        </p>
+      </details>
+    </fieldset>
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save the plan</button>
+      <a class="btn btn--quiet" href="{% url 'health:panel' %}">Back to the panel</a>
+    </div>
+  </form>
+
+  {% if preview %}
+    <h2 class="legend-like">What that works out as</h2>
+    <dl class="nutrients">
+      {% for slug, decided in preview.items %}
+        <div class="nutrients__row">
+          <dt>{{ slug|capfirst }}</dt>
+          <dd>
+            {% if decided.lower %}{{ decided.lower|floatformat:"-1" }}{% endif %}{% if decided.lower and decided.upper %}–{% endif %}{% if decided.upper %}{{ decided.upper|floatformat:"-1" }}{% endif %}
+          </dd>
+        </div>
+      {% endfor %}
+    </dl>
+    <p class="field__help">
+      Grams for the macros, kilocalories for energy. The band is wider than
+      the calorie range you typed, because the low end uses every macro's
+      smallest share and the high end its largest — pairing them any other
+      way would claim a precision these ranges do not have.
+    </p>
+  {% endif %}
+{% endblock %}

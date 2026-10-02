@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>What is “{{ ingredient.name }}”?</h1>
+  <p class="field__help">
+    Recipes name ingredients loosely; nutrition needs a specific food. Pinning
+    one here is per person — you and someone else can reasonably disagree about
+    which brand of stock cube “stock cube” means.
+    {% if current %}Currently <strong>{{ current }}</strong>.{% endif %}
+  </p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.GET.next }}">
+    {% include "recipes/_field.html" with field=form.entry %}
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Pin it</button>
+      <a class="btn btn--quiet" href="{% url 'pantry:search' %}?q={{ ingredient.name|urlencode }}">Find another</a>
+    </div>
+  </form>
+{% endblock %}

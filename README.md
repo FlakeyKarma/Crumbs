@@ -28,9 +28,9 @@ once, find them again, and cook from them without the page fighting you.
 ## Quickstart
 
 ```bash
-make install      # virtualenv, dependencies, migrations, database
+make install      # virtual environment, dependencies, migrations, database
 make superuser    # an account to sign in with
-make seed         # optional: three recipes to look at
+make seed         # optional: starter recipes and the built-in health metrics
 make run
 ```
 
@@ -39,6 +39,8 @@ menu at `/settings/`.
 
 `make` on its own lists every target. Anything can be overridden on the
 command line: `make run PORT=9000`, `make run CRUMBS_THEME=inkwell`.
+
+To build against a particular interpreter: `make install PYTHON=python3.12`.
 
 The same thing by hand, if you'd rather not use make:
 
@@ -54,6 +56,21 @@ python manage.py runserver
 
 `makemigrations` is a real first step, not a formality — no migration files are
 committed, so the first run is where the schema gets created.
+
+### Upgrading an existing copy
+
+No migration files are committed, so a new version with new model fields
+leaves your database a version behind. After extracting or pulling:
+
+```bash
+make migrate     # makemigrations, then migrate
+make seed        # only if the release added built-in health metrics
+```
+
+Skipping it shows up as `no such column: …` on whichever page uses the new
+field. `runserver` warns about it at startup (`recipes.W002`) and `make
+health` fails on it, so it should not be a surprise — but it is the one
+step an upgrade always needs.
 
 ### Checking an installation
 
@@ -105,6 +122,8 @@ crumbs/
 ├── Makefile                 install, run, health, and the rest
 ├── manage.py
 ├── crumbs/                  project settings, root URLs, wsgi/asgi
+├── pantry/                  food catalogue, stock ledger, FDC/OFF import
+├── health/                  metrics, targets, what was eaten
 ├── recipes/
 │   ├── models.py            Recipe, RecipeIngredient, Step, Ingredient, Tag,
 │   │                        Note and NoteShare, Theme, SiteSettings
@@ -318,6 +337,166 @@ files in `static/fonts/` and add `@font-face` rules at the top of `crumbs.css`.
 `static/css/DESIGN-NOTES.md` records the palette, type scale and layout
 reasoning if you want to change the look without unpicking it first.
 
+## The Pantry
+
+A catalogue of foods and a record of what's actually in the house. They are
+deliberately two different things:
+
+- **The catalogue** (`FoodEntry`) is global to the installation — one row per
+  food per source, every nutrient stored **per 100 g**. Imported from USDA
+  FoodData Central or Open Food Facts, or typed in. Retiring a food hides it
+  from pickers but leaves it readable, because deleting it would rewrite
+  everyone's logged history.
+- **The stock** (`PantryItem` lots and the `StockMovement` ledger) is per
+  person. A lot, not a running total: two boxes bought a month apart expire on
+  different days, and "what goes off first" is a question people ask.
+
+**How it meets recipes.** It doesn't, until you cook. Recipes stay authored
+against `recipes.Ingredient` — a name a line points at, nothing more.
+`IngredientDefault` is the bridge: per user, "when a recipe says *smoked
+paprika*, I mean this food." Without one the picker opens and you choose;
+with one, nutrition and stock resolve silently. Per user, because two people
+can reasonably disagree about which brand of stock cube "stock cube" means.
+
+**Nothing guesses.** A line that can't be converted — a count with no portion
+weight, a volume with no density — is reported as a gap, not filled in with a
+plausible number. A calorie figure that quietly omits the olive oil is worse
+than one that says it's incomplete.
+
+**Running short is not an error.** You can cook something you're low on, so
+`draw()` returns what it actually took and what was missing, and
+`cook_from_recipe()` reports shortfalls rather than refusing. Lots are drawn
+soonest-to-expire first, with undated ones last.
+
+**`consume` and `eaten` are not the same movement.** Cooking a batch draws
+stock and feeds nobody — the food still exists, as a meal in the fridge. Only
+`eaten` is intake.
+
+### API keys
+
+FoodData Central needs a key per user; Open Food Facts needs none, so having
+no key is a normal state rather than an error — the FDC leg reports it and
+the rest of the lookup still returns results. Keys are encrypted at rest with
+a hand-rolled Fernet wrapper (`pantry/fields.py`), because
+`django-fernet-fields` is unmaintained against current Django.
+
+Set `CRUMBS_PANTRY_KEY`. Without it the encryption key is derived from
+`SECRET_KEY`, which means rotating `SECRET_KEY` invalidates every stored API
+key — recoverable, but a nasty surprise weeks later, so `manage.py check`
+warns (`pantry.W001`) the whole time the fallback is in use.
+
+## The nutrition schema
+
+The `nutrition` app holds foods as **rows rather than columns**. `FoodEntry`
+grew from 8 nutrient columns to 27, and each addition was a schema change;
+here, adding vitamin K is an INSERT.
+
+| table | what it holds |
+| --- | --- |
+| `Unit` | a unit and what it is worth in its dimension's base unit |
+| `CoreMacro` | energy, protein, carbohydrate, fat, fibre |
+| `Macro` | one component of one core macro, for one food |
+| `MicroCategory` | minerals, vitamins |
+| `Micro` | one micronutrient, for one food |
+| `Food` | a food, and the quantity its rows describe |
+| `Meal` | something built out of foods and other meals |
+| `MealFood` | one portion of one food or meal — the centre of the model |
+| `FoodTracking` | what somebody ate, and when |
+
+**An absent row means unrecorded.** That is the point of the shape: the old
+wide table could not tell "nobody recorded the iron" from "there is no iron
+in it", because both were an empty cell.
+
+**Totals are computed in base units.** A food recorded in micrograms and one
+recorded in milligrams add up without either side knowing about the other,
+because everything converts through gram, millilitre or kilocalorie.
+
+### Three departures from the original table list
+
+Each because the literal version could not hold the data:
+
+- **Macro and Micro point at Food, not the reverse.** `Food.macro_table_id`
+  was a single foreign key, so a food could have exactly one macro and one
+  micro. The rows are created per food, so the key belongs on the row.
+- **`unit_count` is decimal.** As an integer, 4.2 mg of iron becomes 4 and
+  0.75 µg of B12 becomes 1 — the figures the table exists to hold are mostly
+  fractional. Integer counts of micrograms would also have worked.
+- **`Unit` and a reference quantity were added.** `unit_id` pointed at a
+  table that did not exist, and nothing said what quantity of food the counts
+  describe. `Food.reference_quantity` defaults to 100 g, which is what both
+  importers produce.
+
+`MealFood`'s source is two nullable keys plus a check constraint rather than
+a bare `(is_meal, id)` pair. The flag is kept because it reads well, but the
+database enforces that it agrees with whichever key is filled — an integer
+pointing at the wrong table is a bug that only surfaces as missing food.
+
+### Portions come from the recipe, not from the reference
+
+A reference lists the foods it can stand for. It does not say *how much* —
+that is worked out from the recipe line every time it is read:
+
+```
+250 g of a food listed per 100 g   ->  factor 2.5
+8 oz  of a food listed per 100 g   ->  factor 2.268
+2 tbsp of oil, density 0.92        ->  27.2 g,  factor 0.272
+1 cup of flour, density 0.53       ->  125.4 g, factor 1.254
+3 cloves of garlic, 4 g each       ->  12 g,    factor 0.12
+```
+
+Computed rather than stored because the same chosen food in a recipe calling
+for 250 g and one calling for 2 tbsp is two different portions, and recording
+either on the reference makes the other wrong.
+
+The reference is paired to its ingredient line by the **same patterns** that
+recognise the phrase in the prose, so one set of phrasings does both jobs.
+
+**Crossing dimensions needs a number somebody has supplied.** Volume to mass
+needs `Food.density_g_per_ml`; counting cloves or slices needs a
+`FoodPortion` row saying what one weighs. Without them the portion comes back
+as a stated gap — "no density recorded, so tbsp cannot become g" — rather
+than a plausible invented figure, which would be indistinguishable from a
+measured one.
+
+### Meals inside meals
+
+A curry contains a spice paste, which is useful and also the shape of an
+infinite loop. A check constraint catches direct self-reference, `clean()`
+walks the tree for indirect cycles, and the totals code carries the meals
+already on its branch so a cycle that got in anyway is **reported rather
+than hung on**. Portions multiply down the tree: half a curry containing half
+a paste gives you a quarter of the paste.
+
+### Moving across
+
+```bash
+make migrate
+python manage.py seed_nutrition      # units, core macros, micro categories
+python manage.py import_foodentries  # --dry-run first if you like
+```
+
+The import is re-runnable, rebuilds each food's rows from scratch, and turns
+one populated column into one row. A NULL column becomes no row.
+
+## The Health Panel
+
+Sits on top of the Pantry. Metrics across nutrition, body and movement;
+targets in four shapes (at least, at most, between, track-only) that are
+**effective-dated rather than edited**, so changing a target next month
+doesn't rewrite how you did last month.
+
+All four shapes share one vocabulary — `state` is under/ok/over/unknown and
+`fraction` is how far along the bar to fill — so the panel draws one kind of
+measure rather than four.
+
+**Nutrition is frozen onto each log entry** at the time you log it. Correcting
+a food's numbers later fixes future entries and leaves history alone.
+
+**Logging a food depletes stock; logging a recipe doesn't.** Eating an apple
+from the cupboard is exactly when the cupboard should lose it. Eating a
+portion of something you cooked yesterday shouldn't empty it twice — cooking
+already drew the ingredients.
+
 ## Sticky notes
 
 A note is a scrap of paper stuck to a recipe — "halve the sugar", "Dad's
@@ -360,6 +539,46 @@ Two things the spec left open, where I picked a default rather than guess in
 silence: **collision** (overlapping icons stack rather than fan out) and
 **forking** (there is no copy-a-recipe feature yet, so no decision was
 forced). Both are worth settling before the note count gets high.
+
+## Backup and restore
+
+Two buttons in the settings menu, and the same two things from a terminal:
+
+```bash
+python manage.py backup --to /path/crumbs.tar.gz
+python manage.py restore /path/crumbs.tar.gz            # merge
+python manage.py restore /path/crumbs.tar.gz --replace  # empty first
+```
+
+An archive holds `MANIFEST.json`, `data.json` and `media/`. Media is in
+there because a database dump alone restores recipes pointing at pictures
+that are no longer on disk.
+
+**Left out on purpose:** sessions, permissions, content types and admin log
+entries. Sessions are worthless by morning; the other three are rebuilt from
+the code, and including them is the usual reason a `loaddata` fails on a
+content-type primary key that does not line up.
+
+**Left in, and worth knowing:** password hashes, and the encrypted FoodData
+Central keys. Those keys are tied to `PANTRY_ENCRYPTION_KEY`, or to
+`SECRET_KEY` when that is unset — so restoring onto an install with a
+different key leaves them unreadable. The manifest records which was in use
+and `restore` warns when they differ, rather than letting it be discovered
+weeks later. Treat a backup as a secret.
+
+### Restoring is the one button that can lose work
+
+So it is guarded three ways: the word RESTORE has to be typed, a backup of
+the current state is written first, and *replacing* is a separate choice from
+*merging*. Merge is the default — matching rows are overwritten, anything
+added since stays. Replace empties the tables, which is what you want after
+losing a disk and not what you want after a bad afternoon; it clears sessions
+too, so it signs you out.
+
+An archive is a file somebody hands you, so media is unpacked with
+`filter="data"` and each path is checked against `MEDIA_ROOT` — and it is
+unpacked **before** the database is touched, so an archive that tries to
+escape is refused with the data still as it was.
 
 ## Deploying it
 

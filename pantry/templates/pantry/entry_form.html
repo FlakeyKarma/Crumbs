@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>{{ page_title }}</h1>
+
+  {# enctype: the form now carries a photo. #}
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <fieldset class="fieldset">
+      <legend>What it is</legend>
+      {% include "recipes/_field.html" with field=form.name %}
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.brand %}
+        {% include "recipes/_field.html" with field=form.barcode %}
+      </div>
+      {% include "recipes/_field.html" with field=form.image %}
+    </fieldset>
+
+    {% for group in form.nutrient_groups %}
+      {% if forloop.first %}
+        {% comment %}
+          Macronutrients are open, because that is the group a packet
+          actually lists and the one most people fill in. Minerals and
+          vitamins are folded away until wanted — but opened automatically
+          if they already hold a value, so editing never hides a number.
+        {% endcomment %}
+        <fieldset class="fieldset">
+          <legend>{{ group.label }}, per 100 g</legend>
+          <div class="field-grid">
+            {% for field in group.fields %}
+              {% include "recipes/_field.html" with field=field %}
+            {% endfor %}
+          </div>
+        </fieldset>
+      {% else %}
+        <details class="fieldset nutrient-group" {% if group.filled %}open{% endif %}>
+          <summary>{{ group.label }}, per 100 g</summary>
+          <div class="field-grid">
+            {% for field in group.fields %}
+              {% include "recipes/_field.html" with field=field %}
+            {% endfor %}
+          </div>
+        </details>
+      {% endif %}
+    {% endfor %}
+
+    <fieldset class="fieldset">
+      <legend>Measuring it</legend>
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.serving_size %}
+        {% include "recipes/_field.html" with field=form.serving_unit %}
+        {% include "recipes/_field.html" with field=form.density_g_per_ml %}
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save food</button>
+      {% if entry %}
+        <a class="btn btn--quiet" href="{{ entry.get_absolute_url }}">Cancel</a>
+      {% else %}
+        <a class="btn btn--quiet" href="{% url 'pantry:search' %}">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}

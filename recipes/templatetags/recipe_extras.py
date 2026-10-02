@@ -28,9 +28,12 @@ def query_with(context, **overrides):
             params.pop(key, None)
         else:
             params[key] = value
-    if "page" not in overrides:
-        # Changing the filter or the sort should land you back on page one.
-        params.pop("page", None)
+    # Changing a filter or a sort should land you back on page one — of
+    # every list on the page, since a page with two lists has two page
+    # parameters and neither survives a change of filter.
+    if not any(key.endswith("page") for key in overrides):
+        for key in [k for k in params if k.endswith("page")]:
+            params.pop(key, None)
     encoded = params.urlencode()
     return f"?{encoded}" if encoded else "?"
 
@@ -46,3 +49,16 @@ def get_item(mapping, key):
     if not hasattr(mapping, "get"):
         return []
     return mapping.get(key) or []
+
+
+@register.simple_tag
+def with_references(text, bindings=None, library=None):
+    """Render prose, turning `**filler**` into a reference button.
+
+    A tag rather than a filter because it needs the recipe (to find the
+    reference) and the reader's bindings (to show the food they chose).
+    Escaping happens inside — see recipes/references.py.
+    """
+    from ..references import render
+
+    return render(text, bindings=bindings, references=library)

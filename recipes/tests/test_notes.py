@@ -328,3 +328,151 @@ class RenderingTests(TestCase):
         second = self.client.get(self.recipe.get_absolute_url()).context["cook_session"]
         self.assertEqual(first, second)
         self.assertTrue(first)
+
+
+class PlacementTests(TestCase):
+    """Dragging a note, and turning it with the arrows."""
+
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.cook = User.objects.create_user("cook", password="hunter2hunter2")
+        cls.friend = User.objects.create_user("friend", password="hunter2hunter2")
+        cls.recipe = Recipe.objects.create(title="Dal", author=cls.cook, is_shared=True)
+
+    def setUp(self):
+        self.note = NoteFactory.make(self.recipe, self.cook)
+        self.url = reverse("recipes:note-place", args=[self.note.pk])
+        self.client.force_login(self.cook)
+
+    def place(self, **data):
+        return self.client.post(self.url, data)
+
+    def test_a_new_note_lands_in_placement_mode(self):
+        step = Step.objects.create(recipe=self.recipe, position=0, text="Simmer.")
+        response = self.client.post(
+            reverse("recipes:note-create", args=[self.recipe.slug]),
+            {
+                "body": "Halve the sugar.",
+                "anchor_step": str(step.pk),
+                "visibility": Note.Visibility.PRIVATE,
+                "size": "m", "icon": "circle", "colour": "tomato",
+                "offset_x": "50", "offset_y": "50", "rotation": "0",
+            },
+        )
+        note = Note.objects.latest("pk")
+        self.assertEqual(response["Location"], f"{self.recipe.get_absolute_url()}?place={note.pk}")
+
+    def test_the_toolbar_appears_for_the_note_being_placed(self):
+        response = self.client.get(f"{self.recipe.get_absolute_url()}?place={self.note.pk}")
+        self.assertEqual(response.context["placing_note"], self.note)
+        self.assertContains(response, "data-placing-note")
+
+    def test_no_toolbar_without_the_parameter(self):
+        response = self.client.get(self.recipe.get_absolute_url())
+        self.assertIsNone(response.context["placing_note"])
+
+    def test_you_cannot_place_someone_elses_note(self):
+        self.client.force_login(self.friend)
+        response = self.client.get(f"{self.recipe.get_absolute_url()}?place={self.note.pk}")
+        self.assertIsNone(response.context["placing_note"])
+        self.assertEqual(self.place(offset_x="10", offset_y="10").status_code, 403)
+
+    def test_dragging_saves_the_position(self):
+        self.place(offset_x="12.5", offset_y="87.25", rotation="45")
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.offset_x, Decimal("12.50"))
+        self.assertEqual(self.note.offset_y, Decimal("87.25"))
+        self.assertEqual(self.note.rotation, 45)
+
+    def test_a_position_off_the_anchor_is_pulled_back_on(self):
+        self.place(offset_x="-40", offset_y="250")
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.offset_x, Decimal("0.00"))
+        self.assertEqual(self.note.offset_y, Decimal("100.00"))
+
+    def test_rotation_wraps_instead_of_sticking(self):
+        """Turning right past 359 comes back to 0 — an upside-down note is a
+        feature, so the dial must go all the way round."""
+        for sent, expected in (("370", 10), ("360", 0), ("-15", 345), ("720", 0)):
+            with self.subTest(sent=sent):
+                self.place(rotation=sent)
+                self.note.refresh_from_db()
+                self.assertEqual(self.note.rotation, expected)
+
+    def test_rubbish_is_ignored_rather_than_zeroing_the_note(self):
+        self.place(offset_x="30", offset_y="30", rotation="90")
+        self.place(offset_x="banana", rotation="sideways")
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.offset_x, Decimal("30.00"))
+        self.assertEqual(self.note.rotation, 90)
+
+    def test_placing_is_a_post(self):
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+
+    def test_it_answers_json_to_the_script(self):
+        response = self.client.post(
+            self.url,
+            {"offset_x": "20", "offset_y": "40", "rotation": "15"},
+            headers={"x-requested-with": "XMLHttpRequest"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["rotation"], 15)
+
+    def test_it_redirects_for_a_plain_form_post(self):
+        response = self.place(offset_x="20", offset_y="40")
+        self.assertEqual(response.status_code, 302)
+
+
+class ColourTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.cook = get_user_model().objects.create_user("cook", password="hunter2hunter2")
+        cls.recipe = Recipe.objects.create(title="Dal", author=cls.cook, is_shared=True)
+
+    def test_a_note_defaults_to_the_theme_accent(self):
+        self.assertEqual(NoteFactory.make(self.recipe, self.cook).colour, "accent")
+
+    def test_the_colour_reaches_the_icon_and_the_paper(self):
+        NoteFactory.make(
+            self.recipe, self.cook, colour="basil", visibility=Note.Visibility.RECIPE
+        )
+        self.client.cookies[COOKIE_THEME] = "artsy"
+        response = self.client.get(self.recipe.get_absolute_url())
+        self.assertContains(response, 'data-colour="basil"')
+
+    def test_only_offered_colours_are_accepted(self):
+        self.client.force_login(self.cook)
+        response = self.client.post(
+            reverse("recipes:note-create", args=[self.recipe.slug]),
+            {
+                "body": "x", "visibility": Note.Visibility.PRIVATE,
+                "size": "m", "icon": "circle", "colour": "#ff0000",
+                "offset_x": "50", "offset_y": "50", "rotation": "0",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Note.objects.exists())
+
+
+class DialogTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.cook = get_user_model().objects.create_user("cook", password="hunter2hunter2")
+        cls.recipe = Recipe.objects.create(title="Dal", author=cls.cook, is_shared=True)
+
+    def test_the_dialog_is_on_the_page_for_someone_who_can_write(self):
+        self.client.force_login(self.cook)
+        response = self.client.get(self.recipe.get_absolute_url())
+        self.assertContains(response, 'id="note-dialog"')
+        self.assertContains(response, "data-note-dialog-open")
+
+    def test_the_button_still_links_to_the_full_form(self):
+        """With no JavaScript the dialog never opens, so the link has to work."""
+        self.client.force_login(self.cook)
+        response = self.client.get(self.recipe.get_absolute_url())
+        self.assertContains(response, reverse("recipes:note-create", args=[self.recipe.slug]))
+
+    def test_no_dialog_for_a_signed_out_reader(self):
+        response = self.client.get(self.recipe.get_absolute_url())
+        self.assertNotContains(response, 'id="note-dialog"')

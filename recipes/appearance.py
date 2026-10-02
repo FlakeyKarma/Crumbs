@@ -41,6 +41,8 @@ STICKY, RULED, GRID = "sticky", "ruled", "grid"
 THEMES = {
     "classic": {
         "name": "Classic",
+        "reference_fg": "#5a1420",
+        "reference_bg": "#f3dfe3",
         "description": (
             "The house style: chalk, slate and a jar of preserves. Recoloured "
             "site-wide from the settings menu."
@@ -55,6 +57,8 @@ THEMES = {
     },
     "corporate": {
         "name": "Corporate",
+        "reference_fg": "#0d2b45",
+        "reference_bg": "#d6e4f0",
         "description": (
             "Flat colour, square corners and ruled lines — the concrete "
             "jungle. The most legible of the six, and the only one with no "
@@ -66,6 +70,8 @@ THEMES = {
     },
     "artsy": {
         "name": "Artsy",
+        "reference_fg": "#2b1a44",
+        "reference_bg": "#e6dcf7",
         "description": (
             "Six shapes and six colours cycling together, so a button keeps "
             "the same identity wherever it appears. For inspiration."
@@ -79,6 +85,8 @@ THEMES = {
     },
     "cutesy": {
         "name": "Cutesy",
+        "reference_fg": "#5c1c35",
+        "reference_bg": "#ffdfeb",
         "description": "Pink, white and soft-edged, with a diffuse shadow on everything.",
         "note_mode": ICON,
         "paper": STICKY,
@@ -86,6 +94,8 @@ THEMES = {
     },
     "vaporwave": {
         "name": "Vaporwave",
+        "reference_fg": "#2a0a52",
+        "reference_bg": "#ffe94a",
         "description": (
             "Purple, blue and yellow. Neon outlines and glow in the dark; the "
             "same palette without the glow in the light, because neon on a "
@@ -100,6 +110,8 @@ THEMES = {
     },
     "woods": {
         "name": "Woods",
+        "reference_fg": "#3a2a16",
+        "reference_bg": "#e8dcbc",
         "description": (
             "Bark down the left edge of every panel with the season's foliage "
             "at the top. The palette follows your calendar and hemisphere."
@@ -114,6 +126,8 @@ THEMES = {
     },
     "warm-retro": {
         "name": "Warm Retro",
+        "reference_fg": "#4a1d05",
+        "reference_bg": "#f3d7a8",
         "description": "The colours, weight and edges of a kitchen from the 1970s.",
         "note_mode": OVERLAY,
         "paper": RULED,
@@ -125,6 +139,11 @@ THEMES = {
 }
 
 DEFAULT_THEME = "classic"
+
+#: Where a reference highlight falls back to when neither the reader nor the
+#: theme has said. Dark ink on a pale wash: readable on either ground, and
+#: distinct from a link without competing with one.
+FALLBACK_REFERENCE = ("#3a2230", "#ece3e6")
 
 MODES = ("auto", "light", "dark")
 DEFAULT_MODE = "auto"
@@ -236,6 +255,8 @@ def resolve_appearance(request=None, site=None):
         "fonts": profile["fonts"],
         "tunable": profile.get("tunable", False),
         "seasonal": profile.get("seasonal", False),
+        "reference_fg": profile.get("reference_fg", FALLBACK_REFERENCE[0]),
+        "reference_bg": profile.get("reference_bg", FALLBACK_REFERENCE[1]),
         "mode": mode,
         "mode_pref": mode_pref,
         "next_mode": NEXT_MODE[mode_pref],

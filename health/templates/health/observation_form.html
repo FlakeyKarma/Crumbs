@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>Record a reading</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="fieldset">
+      <legend>What are you noting down?</legend>
+      {% include "recipes/_field.html" with field=form.metric %}
+      {% include "recipes/_field.html" with field=form.value %}
+      {% include "recipes/_field.html" with field=form.observed_at %}
+      {% include "recipes/_field.html" with field=form.note %}
+    </fieldset>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save</button>
+      <a class="btn btn--quiet" href="{% url 'health:panel' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

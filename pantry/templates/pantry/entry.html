@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ entry }} — {{ site.site_name }}{% endblock %}
+{% block content %}
+  <h1>{{ entry }}</h1>
+  <ul class="factline">
+    <li>{{ entry.get_source_api_display }}</li>
+    {% if entry.barcode %}<li>{{ entry.barcode }}</li>{% endif %}
+    <li>You have <strong>{{ held_g|floatformat:0 }} g</strong></li>
+    {% if not entry.is_active %}<li>Retired</li>{% endif %}
+  </ul>
+
+  {% if entry.image %}
+    <img class="food-photo" src="{{ entry.image.url }}" alt="{{ entry }}" loading="lazy">
+  {% endif %}
+
+  <p class="button-row">
+    <a class="btn" href="{% url 'pantry:entry-edit' entry.pk %}">Edit this food</a>
+  </p>
+
+  <h2 class="legend-like">Per 100 g</h2>
+  {% for group in entry.nutrition_table %}
+    <h3 class="nutrient-group__heading">{{ group.label }}</h3>
+    {% if group.recorded %}
+      <dl class="nutrients">
+        {% for row in group.recorded %}
+          <div class="nutrients__row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value|floatformat:"-2" }} {{ row.unit }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+      {% if group.recorded|length < group.rows|length %}
+        <p class="field__help">
+          {{ group.rows|length }} tracked here, {{ group.recorded|length }} recorded for
+          this food. The rest are blank because nobody has said, not because they're zero.
+        </p>
+      {% endif %}
+    {% else %}
+      {# Said out loud: an absent heading reads as "we didn't look". #}
+      <p class="field__help">Nothing recorded. <a href="{% url 'pantry:entry-edit' entry.pk %}">Add some</a>.</p>
+    {% endif %}
+  {% endfor %}
+
+  <h2 class="legend-like">Lots</h2>
+  {% for lot in lots %}
+    <div class="foodlog__row">
+      <span class="foodlog__slot">{{ lot.location|default:"—" }}</span>
+      <span class="foodlog__what">
+        {{ lot.quantity_g|floatformat:0 }} g
+        {% if lot.expires_on %}<span class="foodlog__amount">until {{ lot.expires_on|date:"j M" }}</span>{% endif %}
+      </span>
+      <form method="post" action="{% url 'pantry:stock-move' lot.pk %}" class="button-row">
+        {% csrf_token %}
+        <input type="number" name="grams" min="1" step="1" placeholder="g" aria-label="Grams" style="width: 6rem">
+        <button class="btn btn--quiet" type="submit" name="kind" value="eaten">Ate</button>
+        <button class="btn btn--quiet" type="submit" name="kind" value="consume">Cooked with</button>
+        <button class="btn btn--quiet" type="submit" name="kind" value="discard">Binned</button>
+      </form>
+    </div>
+  {% empty %}
+    <p class="field__help">None in the house.</p>
+  {% endfor %}
+
+  <h2 class="legend-like">Put some away</h2>
+  <form method="post" action="{% url 'pantry:stock-add' entry.pk %}" novalidate>
+    {% csrf_token %}
+    <div class="field-grid">
+      {% include "recipes/_field.html" with field=stock_form.quantity_g %}
+      {% include "recipes/_field.html" with field=stock_form.acquired_on %}
+      {% include "recipes/_field.html" with field=stock_form.expires_on %}
+      {% include "recipes/_field.html" with field=stock_form.location %}
+    </div>
+    <div class="form-actions"><button class="btn btn--primary" type="submit">Add to the pantry</button></div>
+  </form>
+
+  <h2 class="legend-like">What one of these weighs</h2>
+  <p class="field__help">
+    How “2 cloves” or “1 slice” becomes grams. Without a weight here, a count
+    unit can't be converted and the recipe's nutrition will say so rather than
+    guess.
+  </p>
+  {% for portion in entry.portions.all %}
+    <p class="field__help">{{ portion }}{% if portion.note %} — {{ portion.note }}{% endif %}</p>
+  {% endfor %}
+  <form method="post" action="{% url 'pantry:portion-add' entry.pk %}" novalidate>
+    {% csrf_token %}
+    <div class="field-grid">
+      {% include "recipes/_field.html" with field=portion_form.unit %}
+      {% include "recipes/_field.html" with field=portion_form.grams %}
+      {% include "recipes/_field.html" with field=portion_form.note %}
+    </div>
+    <div class="form-actions"><button class="btn" type="submit">Record it</button></div>
+  </form>
+{% endblock %}

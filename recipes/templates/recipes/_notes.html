@@ -14,7 +14,9 @@ Places the notes for one anchor according to the theme's note mode.
               class="note-icon"
               data-note-id="{{ note.pk }}"
               data-shape="{{ note.icon }}"
+              data-colour="{{ note.colour }}"
               data-origin="{{ note.visibility }}"
+              {% if placing_note and placing_note.pk == note.pk %}data-placing="true"{% endif %}
               data-read="false"
               aria-expanded="false"
               aria-controls="note-panel-{{ note.pk }}"

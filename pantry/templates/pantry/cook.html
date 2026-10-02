@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}What can I cook? — {{ site.site_name }}{% endblock %}
+{% block content %}
+  <h1>What can I cook?</h1>
+  <p class="field__help">
+    Ranked by how much of each recipe is already in the house. “Can't tell”
+    means an ingredient has no food pinned to it, or no weight for its unit —
+    that's a gap in the data, not a missing ingredient.
+  </p>
+
+  <ul class="measures">
+    {% for row in scored %}
+      <li class="measure" data-state="{% if row.cookable %}ok{% elif row.missing %}under{% else %}unknown{% endif %}">
+        <div class="measure__head">
+          <span class="measure__name"><a href="{{ row.recipe.get_absolute_url }}">{{ row.recipe.title }}</a></span>
+          <span class="measure__value">{{ row.ratio|floatformat:0 }}<span class="measure__unit">of 1</span></span>
+        </div>
+        <div class="measure__track">
+          <span class="measure__fill" style="width: {% widthratio row.ratio 1 100 %}%"></span>
+        </div>
+        <p class="measure__note">
+          {% if row.cookable %}Everything's in.
+          {% else %}
+            {% if row.missing %}Short of {{ row.missing|length }}{% endif %}
+            {% if row.unknown %}{% if row.missing %}, {% endif %}can't tell for {{ row.unknown|length }}{% endif %}
+          {% endif %}
+        </p>
+      </li>
+    {% empty %}
+      <p class="field__help">No recipes to check yet.</p>
+    {% endfor %}
+  </ul>
+{% endblock %}

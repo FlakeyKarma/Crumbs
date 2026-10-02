@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}References — {{ site.site_name }}{% endblock %}
+
+{% block content %}
+  <div class="index-head">
+    <div>
+      <h1>References</h1>
+      <p>
+        {% if search_term %}
+          {{ library|length }} of {{ total }} matching “{{ search_term }}”.
+        {% else %}
+          {{ total }} term{{ total|pluralize }}, each with the phrasings that
+          recognise it and the portions it can stand for.
+        {% endif %}
+      </p>
+    </div>
+    <nav class="sorts">
+      <a href="{% url 'pantry:home' %}">The Pantry</a>
+      <a href="{% url 'pantry:cook' %}">What can I cook?</a>
+      <a href="{% url 'pantry:search' %}">Find a food</a>
+      <a href="{% url 'pantry:references' %}" aria-current="true">References</a>
+      <a href="{% url 'pantry:credentials' %}">Sources</a>
+    </nav>
+  </div>
+
+  <form class="reference-search" role="search" method="get">
+    <label class="skip-link" for="reference-q">Search references</label>
+    <input type="search" id="reference-q" name="q" value="{{ search_term }}"
+           placeholder="beef, onion, mince…">
+    <button class="btn" type="submit">Search</button>
+    {% if search_term %}
+      <a class="btn btn--quiet" href="{% url 'pantry:references' %}">Clear</a>
+    {% endif %}
+  </form>
+
+  <p class="field__help">
+    A recipe that says <code>**lean beef**</code> is matched against these.
+    Each term can have several phrasings — add them one at a time rather than
+    writing one long pattern. Matching ignores case and must cover the whole
+    phrase, so “beef” will not claim “beef stock”.
+  </p>
+
+  {% if collisions %}
+    <div class="nonfield-errors">
+      <p>More than one term claims the same phrase. The first one listed wins.</p>
+      <ul>
+        {% for clash in collisions %}
+          <li>“{{ clash.phrase }}” — {{ clash.first }}, then {{ clash.second }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if library %}
+    <ul class="reference-list">
+      {% for reference in library %}
+        <li class="reference-entry" id="reference-{{ reference.pk }}">
+          <div class="reference-entry__head">
+            <h2>{{ reference }}</h2>
+            <a class="btn btn--quiet" href="{% url 'pantry:reference-edit' reference.pk %}">Rename or delete</a>
+          </div>
+
+          <h3 class="reference-entry__label">Phrasings</h3>
+          {% if reference.patterns.all %}
+            <ul class="reference-entry__patterns">
+              {% for row in reference.patterns.all %}
+                <li class="phrasing">
+                  <div class="phrasing__head">
+                    <code>{{ row.pattern }}</code>
+                    {% if row.is_regex %}<span class="picker__tag">regular expression</span>{% endif %}
+
+                    <details class="phrasing__edit">
+                      <summary aria-label="Edit the phrasing “{{ row.pattern }}”">Edit</summary>
+                      {% comment %}
+                        The text and the checkbox are one form, because they
+                        are one decision: ticking the box usually means
+                        rewriting the text in the same breath.
+                      {% endcomment %}
+                      <form method="post" action="{% url 'pantry:reference-pattern-edit' row.pk %}">
+                        {% csrf_token %}
+                        <div class="field">
+                          <label for="edit-{{ row.pk }}">Phrasing</label>
+                          <input type="text" id="edit-{{ row.pk }}" name="pattern"
+                                 value="{{ row.pattern }}" autocomplete="off" required>
+                        </div>
+                        <label class="field--inline">
+                          <input type="checkbox" name="is_regex" {% if row.is_regex %}checked{% endif %}>
+                          <span>Treat it as a regular expression</span>
+                        </label>
+                        <div class="add-pattern__actions">
+                          <button class="btn btn--quiet" type="reset" data-cancel>Cancel</button>
+                          <button class="btn btn--primary" type="submit">Save</button>
+                        </div>
+                      </form>
+                    </details>
+
+                    <form method="post" action="{% url 'pantry:reference-pattern-remove' row.pk %}">
+                      {% csrf_token %}
+                      <button class="btn btn--quiet" type="submit">Remove</button>
+                    </form>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="field__help">
+              None yet, so nothing matches this term. Add one below.
+            </p>
+          {% endif %}
+
+          {% comment %}
+            A <details> rather than a scripted panel: the "+" opens it, and
+            it still opens with JavaScript off. Cancel is a reset, which
+            clears the box on its own; the script also closes the panel.
+          {% endcomment %}
+          <details class="add-pattern">
+            <summary aria-label="Add another phrasing for {{ reference }}">
+              <span aria-hidden="true">+</span> Add a phrasing
+            </summary>
+            <form method="post" action="{% url 'pantry:reference-pattern-add' reference.pk %}">
+              {% csrf_token %}
+              <div class="field">
+                <label for="pattern-{{ reference.pk }}">Another way of saying “{{ reference }}”</label>
+                <input type="text" id="pattern-{{ reference.pk }}" name="pattern"
+                       placeholder="beef mince" autocomplete="off" required>
+                <span class="field__help">Just the words. Punctuation is matched as typed.</span>
+              </div>
+              <label class="field--inline">
+                <input type="checkbox" name="is_regex">
+                <span>Treat it as a regular expression</span>
+              </label>
+              <div class="add-pattern__actions">
+                <button class="btn btn--quiet" type="reset" data-cancel>Cancel</button>
+                <button class="btn btn--primary" type="submit">Save</button>
+              </div>
+            </form>
+          </details>
+
+          <h3 class="reference-entry__label">Foods it can stand for</h3>
+          {% if reference.food_references.all %}
+            <ul class="reference-entry__foods">
+              {% for row in reference.food_references.all %}
+                <li>
+                  <span>{{ row.meal_food.source }}</span>
+                  <form method="post" action="{% url 'pantry:reference-attach' reference.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn--quiet" type="submit" name="detach"
+                            value="{{ row.meal_food_id }}">Remove</button>
+                  </form>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="field__help">
+              None yet. This term will be recognised but have nothing to offer.
+            </p>
+          {% endif %}
+
+          <p class="field__help">
+            How much of one gets used is worked out from the recipe each time —
+            its amount and unit, converted into whatever the food is measured
+            in. Nothing is fixed here.
+          </p>
+
+          <form method="post" action="{% url 'pantry:reference-attach' reference.pk %}"
+                class="reference-entry__add" data-attach-form>
+            {% csrf_token %}
+            <button class="btn" type="button" data-attach-open>Add a food</button>
+            {% comment %}
+              The script swaps this select for a search. It stays because a
+              two-hundred-item dropdown is still better than nothing when
+              the script has not loaded.
+            {% endcomment %}
+            <span class="reference-entry__fallback" data-attach-fallback>
+              <label class="skip-link" for="attach-{{ reference.pk }}">Portion</label>
+              <select id="attach-{{ reference.pk }}" name="meal_food">
+                {% for option in meal_foods %}
+                  <option value="{{ option.pk }}">{{ option }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn" type="submit">Add</button>
+            </span>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif search_term %}
+    <div class="empty">
+      <h2>Nothing matches “{{ search_term }}”</h2>
+      <p><a href="{% url 'pantry:references' %}">Show them all</a>, or add it below.</p>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h2>No references yet</h2>
+      <p>Add one below, or click a highlighted phrase in a recipe and create it there.</p>
+    </div>
+  {% endif %}
+
+  <section class="fieldset">
+    <h2 class="legend-like">Add a reference</h2>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "recipes/_field.html" with field=form.label %}
+      <div class="form-actions">
+        <button class="btn btn--primary" type="submit">Add it</button>
+      </div>
+    </form>
+    <p class="field__help">Add the term first, then its phrasings beneath it.</p>
+  </section>
+
+  <dialog class="picker" id="portion-picker" aria-labelledby="portion-picker-title">
+    <div class="picker__head">
+      <h2 id="portion-picker-title">Add a portion</h2>
+      <button class="btn btn--quiet" type="button" data-picker-close aria-label="Close">&times;</button>
+    </div>
+    <div class="picker__body">
+      <label class="skip-link" for="portion-picker-q">Search portions</label>
+      <input type="search" id="portion-picker-q" data-picker-input
+             data-picker-url="{% url 'pantry:meal-food-search' %}"
+             placeholder="beef mince" autocomplete="off">
+      <p class="field__help" data-picker-status>Type at least two letters.</p>
+      <ul class="picker__results" data-picker-results></ul>
+    </div>
+  </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/pickers.js' %}" defer></script>
+{% endblock %}

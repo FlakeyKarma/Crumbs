@@ -4,8 +4,10 @@ Reading a recipe is the common case and stays fast and anonymous-friendly;
 writing one is behind a login and belongs to whoever wrote it.
 """
 
+import tempfile
 import uuid
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from pathlib import Path
 from functools import wraps
 
 from django.conf import settings as django_settings
@@ -15,13 +17,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count, F
-from django.http import Http404
+from django.db.models import Count, F, Q
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import DeleteView, DetailView, ListView, TemplateView
 
 from .appearance import COOKIE_MODE, COOKIE_THEME, clean_mode, clean_theme, cookie_kwargs
@@ -36,7 +38,25 @@ from .forms import (
     ThemeForm,
     apply_order,
 )
-from .models import Ingredient, Note, NoteShare, Recipe, SiteSettings, Tag, Theme
+from .models import (
+    Ingredient,
+    Note,
+    NoteShare,
+    Recipe,
+    Reference,
+    ReferencePattern,
+    SiteSettings,
+    Tag,
+    Theme,
+    UserFoodReference,
+)
+from .breakdown import recipe_breakdown
+from .references import (
+    bindings_for,
+    forget,
+    library as reference_library,
+    portions_for,
+)
 from .theming import active_key, available_themes, resolve_theme
 
 MAX_SERVINGS = 200
@@ -171,6 +191,27 @@ class RecipeDetailView(PublicPageMixin, DetailView):
         context["recipe_notes"] = recipe_level
         context["all_notes"] = everything
         context["cook_session"] = cook_session_token(self.request, recipe)
+        context["reference_bindings"] = bindings_for(self.request.user, recipe)
+        # Fetched once for the page rather than once per phrase.
+        context["reference_library"] = reference_library()
+        context["reference_portions"] = portions_for(self.request.user, recipe)
+        context["breakdown"] = recipe_breakdown(recipe, self.request.user)
+
+        if self.request.user.is_authenticated:
+            # Rendered into a <dialog> on the page. Without JavaScript the
+            # dialog never opens and the Add a note link goes to the full
+            # page form instead, which is why both exist.
+            context["note_form"] = NoteForm(recipe=recipe, author=self.request.user)
+
+        placing = self.request.GET.get("place")
+        context["placing_note"] = next(
+            (
+                note
+                for note in everything
+                if str(note.pk) == placing and note.editable_by(self.request.user)
+            ),
+            None,
+        )
         return context
 
 
@@ -609,8 +650,10 @@ def note_create(request, slug):
             note.recipe = recipe
             note.author = request.user
             note.save()
-            messages.success(request, "Note stuck on.")
-            return redirect(recipe)
+            # Straight into placement mode rather than back to a static
+            # page: the note has a default position nobody chose, and the
+            # moment to move it is now, while you know where it should go.
+            return redirect(f"{recipe.get_absolute_url()}?place={note.pk}")
         messages.error(request, "Something in the note needs fixing.")
     else:
         form = NoteForm(recipe=recipe, author=request.user)
@@ -645,6 +688,49 @@ def note_edit(request, pk):
         "recipes/note_form.html",
         {"form": form, "recipe": note.recipe, "note": note, "page_title": "Edit note"},
     )
+
+
+@login_required
+@require_POST
+def note_place(request, pk):
+    """Save where a note was dragged to, and how far it was turned.
+
+    Its own endpoint rather than the edit form: placement is a different
+    gesture from writing, it happens on the recipe page, and it should not
+    make you re-submit the note's text to move it two centimetres.
+    """
+    note = get_object_or_404(Note.objects.select_related("recipe"), pk=pk)
+    if not note.editable_by(request.user):
+        raise PermissionDenied("That note belongs to someone else.")
+
+    def bounded(name, low, high, current):
+        try:
+            value = Decimal(request.POST[name])
+        except (KeyError, InvalidOperation, TypeError):
+            return current
+        return max(Decimal(low), min(Decimal(high), value))
+
+    note.offset_x = bounded("offset_x", 0, 100, note.offset_x)
+    note.offset_y = bounded("offset_y", 0, 100, note.offset_y)
+    # Rotation wraps rather than clamping: turning past 359 should come back
+    # round to 0, not stick at the top of the dial.
+    try:
+        note.rotation = int(request.POST.get("rotation", note.rotation)) % 360
+    except (TypeError, ValueError):
+        pass
+    note.save(update_fields=["offset_x", "offset_y", "rotation", "updated_at"])
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "ok": True,
+                "offset_x": str(note.offset_x),
+                "offset_y": str(note.offset_y),
+                "rotation": note.rotation,
+            }
+        )
+    messages.success(request, "Note moved.")
+    return redirect(note.recipe)
 
 
 @login_required
@@ -693,3 +779,232 @@ def note_share(request, pk):
         "recipes/note_share.html",
         {"note": note, "form": form, "shares": note.shares.select_related("user")},
     )
+
+
+# --- Ingredient and food pickers --------------------------------------------
+
+
+@require_GET
+def ingredient_search(request):
+    """Names for the "+" box on the recipe editor.
+
+    Searches the recipe vocabulary — `Ingredient` — and then the food
+    catalogue for anything the vocabulary does not have yet, so picking
+    "smoked paprika" works the first time somebody imports it rather than
+    the first time somebody types it.
+    """
+    term = " ".join(request.GET.get("q", "").split())
+    if len(term) < 2:
+        return JsonResponse({"results": []})
+
+    known = list(
+        Ingredient.objects.filter(name__icontains=term)
+        .order_by("name")
+        .values_list("name", flat=True)[:12]
+    )
+    seen = {name.casefold() for name in known}
+
+    from nutrition.models import Food
+
+    suggested = [
+        name
+        for name in Food.objects.filter(name__icontains=term)
+        .order_by("name")
+        .values_list("name", flat=True)[:30]
+        if name.casefold() not in seen
+    ][:8]
+
+    return JsonResponse(
+        {
+            "results": [{"name": name, "known": True} for name in known]
+            + [{"name": name, "known": False} for name in suggested]
+        }
+    )
+
+
+@login_required
+@require_GET
+def food_search(request):
+    """Foods a reference can be pointed at."""
+    from nutrition.models import Food
+
+    term = " ".join(request.GET.get("q", "").split())
+    if len(term) < 2:
+        return JsonResponse({"results": []})
+
+    foods = Food.objects.filter(
+        Q(name__icontains=term) | Q(description__icontains=term)
+    ).order_by("name")[:20]
+
+    return JsonResponse(
+        {
+            "results": [
+                {
+                    "id": food.pk,
+                    "name": food.name,
+                    "description": food.description,
+                    "source": food.source_api,
+                }
+                for food in foods
+            ]
+        }
+    )
+
+
+@login_required
+@require_POST
+def bind_reference(request, pk):
+    """Point a reference at one of its portions, for this reader.
+
+    The reference is shared vocabulary; the choice is not. Two people
+    cooking the same recipe can mean two different kinds of beef, and the
+    recipe is unchanged by either of them picking.
+
+    Any MealFood is accepted, not only the ones on the reference's
+    quick-pick list — the list is a shortcut, not a allowlist, and refusing
+    something the search just offered would be baffling.
+    """
+    from nutrition.models import MealFood
+
+    reference = get_object_or_404(Reference, pk=pk)
+    recipe = get_object_or_404(
+        Recipe.objects.visible_to(request.user), slug=request.POST.get("recipe", "")
+    )
+
+    if request.POST.get("clear"):
+        UserFoodReference.objects.filter(
+            user=request.user, recipe=recipe, reference=reference
+        ).delete()
+        return JsonResponse({"ok": True, "bound": False, "label": str(reference)})
+
+    meal_food = get_object_or_404(MealFood, pk=request.POST.get("meal_food"))
+    binding, _ = UserFoodReference.objects.update_or_create(
+        user=request.user,
+        recipe=recipe,
+        reference=reference,
+        defaults={"meal_food": meal_food},
+    )
+    return JsonResponse(
+        {
+            "ok": True,
+            "bound": True,
+            "label": str(binding.meal_food.source),
+            "meal_food": meal_food.pk,
+        }
+    )
+
+
+@login_required
+@require_POST
+def create_reference(request):
+    """Make a reference for a phrase a recipe used but nothing recognised.
+
+    The alternative is sending someone to the pantry to write a pattern for
+    a word already on screen, which is the kind of errand software should
+    not hand out.
+    """
+    phrase = " ".join(request.POST.get("phrase", "").split())
+    if not phrase:
+        return JsonResponse({"ok": False, "error": "No phrase given."}, status=400)
+
+    # Plain words, not a pattern: a phrase typed in a recipe is words.
+    # Alternatives get added in the pantry afterwards, one row at a time.
+    reference, created = Reference.objects.get_or_create(label=phrase)
+    if created:
+        ReferencePattern.objects.create(reference=reference, pattern=phrase)
+        forget()
+    return JsonResponse(
+        {"ok": True, "created": created, "id": reference.pk, "label": str(reference)}
+    )
+
+
+# --- Backup and restore -----------------------------------------------------
+
+#: An uploaded archive larger than this is refused unread. A household's
+#: backup is a few megabytes; anything near this is a mistake or an attack.
+MAX_RESTORE_BYTES = 500 * 1024 * 1024
+
+
+@staff_only
+@require_POST
+def settings_backup(request):
+    """Build a backup and hand it over as a download.
+
+    Written to a temporary file rather than assembled in memory: media is
+    in there, and a household with a few hundred photos should not need the
+    whole archive resident to download it.
+    """
+    from .management.commands.backup import archive_name, write_archive
+
+    handle = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
+    handle.close()
+    try:
+        write_archive(handle.name)
+    except Exception:
+        Path(handle.name).unlink(missing_ok=True)
+        messages.error(request, "The backup could not be built.")
+        return redirect("recipes:settings")
+
+    # FileResponse closes the handle; the file is unlinked once sent.
+    response = FileResponse(
+        open(handle.name, "rb"), as_attachment=True, filename=archive_name()
+    )
+    response._resource_closers.append(
+        lambda path=handle.name: Path(path).unlink(missing_ok=True)
+    )
+    return response
+
+
+@staff_only
+@require_POST
+def settings_restore(request):
+    """Take an uploaded archive and put it back.
+
+    Guarded three ways, because this is the one button on the site that can
+    lose work: the word RESTORE has to be typed, a safety backup is written
+    before anything changes, and replacing (rather than merging) is a
+    separate deliberate choice.
+    """
+    from django.core.management import CommandError, call_command
+
+    if request.POST.get("confirm", "").strip().upper() != "RESTORE":
+        messages.error(request, "Type RESTORE to confirm. Nothing was changed.")
+        return redirect("recipes:settings")
+
+    upload = request.FILES.get("archive")
+    if upload is None:
+        messages.error(request, "Choose a backup file first.")
+        return redirect("recipes:settings")
+    if upload.size > MAX_RESTORE_BYTES:
+        messages.error(request, "That file is far larger than a backup should be.")
+        return redirect("recipes:settings")
+
+    replace = request.POST.get("mode") == "replace"
+
+    with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as handle:
+        for chunk in upload.chunks():
+            handle.write(chunk)
+        staged = handle.name
+
+    try:
+        call_command("restore", staged, replace=replace, verbosity=0)
+    except CommandError as error:
+        messages.error(request, f"Nothing was restored: {error}")
+        return redirect("recipes:settings")
+    except Exception:
+        # A failure part-way leaves the safety backup in the project root,
+        # which is the thing to say rather than a traceback.
+        messages.error(
+            request,
+            "The restore failed. The state from just before it is saved in the "
+            "project directory as before-restore-crumbs-backup-*.tar.gz.",
+        )
+        return redirect("recipes:settings")
+    finally:
+        Path(staged).unlink(missing_ok=True)
+
+    if replace:
+        messages.success(request, "Restored. The tables were emptied first.")
+    else:
+        messages.success(request, "Restored, merged into what was already here.")
+    return redirect("recipes:settings")

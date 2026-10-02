@@ -564,6 +564,23 @@ class Note(models.Model):
         MEDIUM = "m", "Medium"
         LARGE = "l", "Large"
 
+    class Colour(models.TextChoices):
+        """A named palette, not a colour picker.
+
+        Six themes and two lighting modes means a hex someone picked against
+        a pale background can be invisible against a dark one. These are
+        fixed pairs — a fill and an ink that reads on it — defined once in
+        notes.css and the same under every theme.
+        """
+
+        ACCENT = "accent", "Theme accent"
+        TOMATO = "tomato", "Tomato"
+        BUTTER = "butter", "Butter"
+        BASIL = "basil", "Basil"
+        SKY = "sky", "Sky"
+        BERRY = "berry", "Berry"
+        SLATE = "slate", "Slate"
+
     class Icon(models.TextChoices):
         CIRCLE = "circle", "Circle"
         SQUARE = "square", "Square"
@@ -572,9 +589,13 @@ class Note(models.Model):
         STAR = "star", "Star"
         PIN = "pin", "Pin"
 
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="notes")
+    # Not "notes": Recipe already has a `notes` text field, and a reverse
+    # accessor of the same name is a system-check error (fields.E302/E303).
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="recipe_notes"
+    )
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notes"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recipe_notes"
     )
 
     body = models.TextField(blank=True)
@@ -614,6 +635,12 @@ class Note(models.Model):
 
     size = models.CharField(max_length=1, choices=Size.choices, default=Size.MEDIUM)
     icon = models.CharField(max_length=10, choices=Icon.choices, default=Icon.CIRCLE)
+    colour = models.CharField(
+        max_length=10,
+        choices=Colour.choices,
+        default=Colour.ACCENT,
+        verbose_name="colour",
+    )
 
     visibility = models.CharField(
         max_length=8, choices=Visibility.choices, default=Visibility.PRIVATE
@@ -687,3 +714,201 @@ class NoteShare(models.Model):
 
     def __str__(self):
         return f"{self.note.summary} → {self.user}"
+
+
+# --- References -------------------------------------------------------------
+#
+# `**lean beef**` in a recipe's prose. The recipe owns the filler name; each
+# reader owns which food they pointed it at. See recipes/references.py.
+
+
+class Reference(models.Model):
+    """A phrase a recipe might use, and the patterns that recognise it.
+
+    The patterns are rows rather than one field, because one field means
+    writing `lean\\s+beef|lean minced beef|beef mince` to cover three
+    phrasings — fine if you write regular expressions, a wall if you don't.
+    Three rows saying those three things do the same job and need nothing
+    explained.
+
+    Global to the installation, like the food catalogue and unlike stock:
+    what counts as "lean beef" is shared vocabulary.
+    """
+
+    label = models.CharField(
+        max_length=80,
+        unique=True,
+        help_text="The term itself, as you'd say it. 'Lean beef'.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["label"]
+
+    def __str__(self):
+        return self.label
+
+    def matches(self, phrase):
+        """True when any one of this reference's patterns recognises it."""
+        return any(row.matches(phrase) for row in self.patterns.all())
+
+
+class ReferencePattern(models.Model):
+    """One way of writing a reference's term.
+
+    ``is_regex`` is off by default, and that default is the point: a plain
+    row is escaped before matching, so somebody typing `beef (lean)` gets a
+    row that recognises exactly that rather than a broken expression and a
+    confusing error. Ticking the box opts in to the full language.
+    """
+
+    reference = models.ForeignKey(
+        Reference, on_delete=models.CASCADE, related_name="patterns"
+    )
+    pattern = models.CharField(
+        max_length=200,
+        verbose_name="reference string",
+        help_text="Just the words, unless you tick the box below.",
+    )
+    is_regex = models.BooleanField(
+        default=False,
+        verbose_name="treat as a regular expression",
+        help_text="Leave this off to match the words exactly as typed.",
+    )
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["reference", "pattern"], name="unique_pattern_per_reference"
+            )
+        ]
+
+    def __str__(self):
+        return self.pattern
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        from .references import compile_pattern
+
+        try:
+            compile_pattern(self.pattern, is_regex=self.is_regex)
+        except ValueError as error:
+            raise ValidationError({"pattern": str(error)})
+
+    def matches(self, phrase):
+        from .references import compile_pattern
+
+        try:
+            compiled = compile_pattern(self.pattern, is_regex=self.is_regex)
+        except ValueError:
+            return False
+        return bool(compiled.fullmatch(phrase.strip()))
+
+
+class FoodReference(models.Model):
+    """One portion this reference can stand for.
+
+    The quick-pick list behind a reference. Points at a MealFood rather than
+    a Food because a MealFood is the thing anyone actually eats — "100 g of
+    beef mince 5%" rather than the abstract food — and because choosing from
+    a list of portions and storing only the food would throw the portion
+    away.
+    """
+
+    reference = models.ForeignKey(
+        Reference, on_delete=models.CASCADE, related_name="food_references"
+    )
+    meal_food = models.ForeignKey(
+        "nutrition.MealFood", on_delete=models.CASCADE, related_name="references"
+    )
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["reference", "meal_food"], name="unique_food_per_reference"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.reference} \u2192 {self.meal_food}"
+
+
+class UserFoodReference(models.Model):
+    """Which of a reference's portions this reader meant, in this recipe.
+
+    Recipe is kept because the same reference can mean different things in
+    different recipes: the beef in a chilli is not the beef in a stroganoff.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="food_references"
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="user_references"
+    )
+    reference = models.ForeignKey(
+        Reference, on_delete=models.CASCADE, related_name="choices"
+    )
+    meal_food = models.ForeignKey(
+        "nutrition.MealFood", on_delete=models.CASCADE, related_name="chosen_for"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe", "reference"],
+                name="one_choice_per_reference_per_recipe_per_user",
+            )
+        ]
+        indexes = [models.Index(fields=["user", "recipe"])]
+
+    def __str__(self):
+        return f"{self.reference} = {self.meal_food}"
+
+
+class UserAppearance(models.Model):
+    """One reader's overrides of the theme.
+
+    Only the reference colours so far. Per user rather than per browser,
+    unlike the theme itself: a highlight you cannot read is a problem you
+    want solved once, not on every device.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="appearance"
+    )
+    reference_foreground = models.CharField(
+        max_length=7,
+        blank=True,
+        validators=[validate_hex_colour],
+        help_text="Leave blank to use the theme's own.",
+    )
+    reference_background = models.CharField(
+        max_length=7,
+        blank=True,
+        validators=[validate_hex_colour],
+        help_text="Leave blank to use the theme's own.",
+    )
+
+    class Meta:
+        verbose_name = "user appearance"
+        verbose_name_plural = "user appearance"
+
+    def __str__(self):
+        return f"Appearance for {self.user}"
+
+    @classmethod
+    def for_user(cls, user):
+        if not (user and user.is_authenticated):
+            return None
+        return cls.objects.filter(user=user).first()

@@ -132,6 +132,69 @@
     </p>
   </section>
 
+  <section class="fieldset" aria-labelledby="backup-heading">
+    <h2 class="legend-like" id="backup-heading">Backup and restore</h2>
+    <p class="field__help">
+      A backup holds every row and every uploaded photo in one file — the
+      database alone would restore recipes pointing at pictures that are no
+      longer there. Sessions, permissions and content types are left out:
+      they are rebuilt from the code, and including them is the usual reason
+      a restore fails.
+    </p>
+
+    <div class="backup">
+      <form method="post" action="{% url 'recipes:settings-backup' %}">
+        {% csrf_token %}
+        <h3>Back up</h3>
+        <p class="field__help">Downloads a single <code>.tar.gz</code>. Nothing changes here.</p>
+        <button class="btn btn--primary" type="submit">Back up now</button>
+      </form>
+
+      <form method="post" action="{% url 'recipes:settings-restore' %}"
+            enctype="multipart/form-data" class="backup__restore">
+        {% csrf_token %}
+        <h3>Restore</h3>
+
+        <div class="field">
+          <label for="restore-archive">The backup file</label>
+          <input type="file" id="restore-archive" name="archive" accept=".gz,.tar.gz" required>
+        </div>
+
+        <fieldset class="field">
+          <legend>What to do with what is here now</legend>
+          <label class="field--inline">
+            <input type="radio" name="mode" value="merge" checked>
+            <span>Merge — overwrite matching rows, keep anything added since</span>
+          </label>
+          <label class="field--inline">
+            <input type="radio" name="mode" value="replace">
+            <span>Replace — empty the tables first, then load the backup</span>
+          </label>
+        </fieldset>
+
+        <div class="field">
+          <label for="restore-confirm">Type RESTORE to confirm</label>
+          <input type="text" id="restore-confirm" name="confirm" autocomplete="off"
+                 placeholder="RESTORE" required>
+        </div>
+
+        <p class="field__help">
+          A backup of the current state is written to the project directory
+          before anything is touched, whichever option you pick. Replacing
+          clears sessions too, so you will be signed out.
+        </p>
+
+        <button class="btn btn--danger" type="submit">Restore from this file</button>
+      </form>
+    </div>
+
+    <p class="field__help">
+      The same two things from a terminal, which is what a scheduled backup
+      would use: <code>manage.py backup --to /path/file.tar.gz</code> and
+      <code>manage.py restore /path/file.tar.gz</code>.
+    </p>
+  </section>
+
   <section class="fieldset">
     <h2 class="legend-like">Accounts and the rest</h2>
     <p class="field__help">

@@ -6,6 +6,10 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("pantry/", include("pantry.urls")),
+    path("health/", include("health.urls")),
+    # Last: the recipes app owns the root, including a /<slug>/ catch-all
+    # shape, so anything with its own prefix has to be registered above it.
     path("", include("recipes.urls")),
 ]
 

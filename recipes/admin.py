@@ -4,6 +4,11 @@ from .models import (
     Ingredient,
     Note,
     NoteShare,
+    FoodReference,
+    Reference,
+    ReferencePattern,
+    UserAppearance,
+    UserFoodReference,
     Recipe,
     RecipeIngredient,
     SiteSettings,
@@ -117,3 +122,47 @@ class NoteAdmin(admin.ModelAdmin):
     autocomplete_fields = ["recipe", "anchor_step"]
     readonly_fields = ["created_at", "updated_at"]
     inlines = [NoteShareInline]
+
+
+class ReferencePatternInline(admin.TabularInline):
+    model = ReferencePattern
+    extra = 1
+
+
+class FoodReferenceInline(admin.TabularInline):
+    model = FoodReference
+    extra = 1
+    autocomplete_fields = ["meal_food"]
+
+
+@admin.register(Reference)
+class ReferenceAdmin(admin.ModelAdmin):
+    list_display = ["__str__", "phrasings", "option_count", "chosen_by"]
+    search_fields = ["label", "patterns__pattern"]
+    inlines = [ReferencePatternInline, FoodReferenceInline]
+
+    @admin.display(description="Phrasings")
+    def phrasings(self, obj):
+        return ", ".join(obj.patterns.values_list("pattern", flat=True)) or "—"
+
+    @admin.display(description="Options")
+    def option_count(self, obj):
+        return obj.food_references.count()
+
+    @admin.display(description="Chosen by")
+    def chosen_by(self, obj):
+        return obj.choices.count()
+
+
+@admin.register(UserFoodReference)
+class UserFoodReferenceAdmin(admin.ModelAdmin):
+    list_display = ["user", "recipe", "reference", "meal_food"]
+    list_filter = ["user"]
+    search_fields = ["reference__label", "recipe__title"]
+    autocomplete_fields = ["recipe", "reference", "meal_food"]
+
+
+@admin.register(UserAppearance)
+class UserAppearanceAdmin(admin.ModelAdmin):
+    list_display = ["user", "reference_foreground", "reference_background"]
+    search_fields = ["user__username"]

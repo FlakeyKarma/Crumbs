@@ -1,0 +1,84 @@
+{% comment %}
+What the recipe adds up to, folded away until asked for.
+
+Per serving first: that is the figure anyone actually wants, and it does not
+move when the servings dial is turned — the dial rescales what you buy, not
+what a portion contains.
+{% endcomment %}
+<details class="nutrition-panel">
+  <summary>
+    Nutrition
+    {% if breakdown.energy_each %}
+      <span class="nutrition-panel__headline">
+        {{ breakdown.energy_each|floatformat:0 }} kcal a serving
+      </span>
+    {% elif breakdown.gaps %}
+      <span class="nutrition-panel__headline">not worked out yet</span>
+    {% endif %}
+  </summary>
+
+  {% if breakdown.counted %}
+    <p class="field__help">
+      From {{ breakdown.counted }} of {{ breakdown.lines }} ingredient{{ breakdown.lines|pluralize }},
+      for {{ breakdown.servings|floatformat:"-2" }} serving{{ breakdown.servings|pluralize }} as written.
+    </p>
+
+    <table class="datatable nutrition-panel__table">
+      <caption>Per serving, and for the whole recipe.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Nutrient</th>
+          <th scope="col" class="datatable__num">Per serving</th>
+          <th scope="col" class="datatable__num">Whole recipe</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if breakdown.energy_each %}
+          <tr class="nutrition-panel__energy">
+            <th scope="row">Energy</th>
+            <td class="datatable__num">{{ breakdown.energy_each|floatformat:0 }} kcal</td>
+            <td class="datatable__num">{{ breakdown.energy_whole|floatformat:0 }} kcal</td>
+          </tr>
+        {% endif %}
+        {% for group in breakdown.groups %}
+          <tr class="nutrition-panel__group">
+            <th scope="colgroup" colspan="3">{{ group.label }}</th>
+          </tr>
+          {% for row in group.rows %}
+            <tr>
+              <th scope="row">{{ row.name }}</th>
+              <td class="datatable__num">{{ row.each|floatformat:"-2" }} {{ row.unit }}</td>
+              <td class="datatable__num">{{ row.whole|floatformat:"-2" }} {{ row.unit }}</td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="field__help">
+      Nothing here is matched to a food yet, so there is nothing to add up.
+    </p>
+  {% endif %}
+
+  {% if breakdown.gaps %}
+    {% comment %}
+      Named rather than silently dropped: a total missing the olive oil is
+      worse than one that says it is missing the olive oil.
+    {% endcomment %}
+    <h3 class="nutrient-group__heading">Not counted</h3>
+    <ul class="nutrition-panel__gaps">
+      {% for gap in breakdown.gaps %}
+        <li>
+          <span>{{ gap.line.ingredient.name }}</span>
+          <span class="field__help">{{ gap.reason }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="field__help">
+      Match an ingredient to a food by writing it as
+      <code>**{{ breakdown.gaps.0.line.ingredient.name }}**</code> in the method
+      and choosing one, or from
+      <a href="{% url 'pantry:references' %}">the reference list</a>.
+    </p>
+  {% endif %}
+</details>

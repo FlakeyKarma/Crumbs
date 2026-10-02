@@ -1,0 +1,19 @@
+{% comment %}
+Company through Fats — the six cells both result tables share.
+
+A FoodEntry and a NormalizedFood are different classes but expose the same
+field names, which is what lets one partial serve the catalogue and the
+open sources. `url` is optional: imported foods link to their page, search
+results have nowhere to go yet.
+
+Every figure is per 100 g. Said once in the caption rather than in 4n cells.
+{% endcomment %}
+<td>{{ food.brand|default:"—" }}</td>
+<td class="datatable__wide">
+  {% if url %}<a href="{{ url }}">{{ food.name }}</a>{% else %}{{ food.name }}{% endif %}
+  {% if not food.has_macros %}<span class="foodlog__flag">no nutrition data</span>{% endif %}
+</td>
+<td class="datatable__num">{% if food.energy_kcal is not None %}{{ food.energy_kcal|floatformat:0 }}{% else %}—{% endif %}</td>
+<td class="datatable__num">{% if food.protein_g is not None %}{{ food.protein_g|floatformat:1 }}{% else %}—{% endif %}</td>
+<td class="datatable__num">{% if food.carbohydrate_g is not None %}{{ food.carbohydrate_g|floatformat:1 }}{% else %}—{% endif %}</td>
+<td class="datatable__num">{% if food.fat_g is not None %}{{ food.fat_g|floatformat:1 }}{% else %}—{% endif %}</td>

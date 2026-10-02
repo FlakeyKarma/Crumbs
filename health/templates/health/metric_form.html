@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>{{ page_title }}</h1>
+  <p class="field__help">
+    Anything you record yourself — sleep, resting heart rate, how many times
+    you cooked instead of ordering in. Metrics that read off the food log name
+    a nutrient on a Pantry food, so those are added through the admin.
+  </p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="fieldset">
+      <legend>The metric</legend>
+      {% include "recipes/_field.html" with field=form.name %}
+      {% include "recipes/_field.html" with field=form.slug %}
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.unit %}
+        {% include "recipes/_field.html" with field=form.kind %}
+        {% include "recipes/_field.html" with field=form.aggregation %}
+        {% include "recipes/_field.html" with field=form.decimals %}
+      </div>
+    </fieldset>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Add it</button>
+      <a class="btn btn--quiet" href="{% url 'health:targets' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

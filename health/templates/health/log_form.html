@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+{% block content %}
+  <h1>Log “{{ recipe.title }}”</h1>
+  <p class="field__help">
+    Nutrition is worked out from the Pantry food each ingredient points at,
+    and frozen onto the entry. Editing the recipe later won't rewrite what you
+    ate today.
+  </p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="fieldset">
+      <legend>How much, and when</legend>
+      <div class="field-grid">
+        {% include "recipes/_field.html" with field=form.servings %}
+        {% include "recipes/_field.html" with field=form.slot %}
+        {% include "recipes/_field.html" with field=form.consumed_at %}
+      </div>
+      {% include "recipes/_field.html" with field=form.deplete_stock inline=True %}
+    </fieldset>
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Log it</button>
+      <a class="btn btn--quiet" href="{{ recipe.get_absolute_url }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

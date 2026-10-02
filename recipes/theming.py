@@ -249,3 +249,35 @@ def resolve_theme(key=None, request=None, themes=None):
     pinned_or("on_primary_dark", readable_on(dark))
 
     return theme
+
+
+# --- Reference highlights ---------------------------------------------------
+
+
+def reference_pair(foreground, background):
+    """A readable highlight in both lighting modes.
+
+    The theme states one pair, chosen against a pale page. On a near-black
+    page that same pale wash is a glare, so the dark variant is derived: the
+    wash is taken down to a deep tint of itself and the ink brought up, then
+    the contrast is *measured* and overridden with plain black or white if
+    the derived pair does not clear 4.5:1. Deriving and then checking beats
+    deriving and hoping.
+    """
+    light_fg = clean_colour(foreground) or FALLBACK["primary"]
+    light_bg = clean_colour(background) or "#ece3e6"
+
+    if contrast_ratio(parse_hex(light_fg), parse_hex(light_bg)) < 4.5:
+        light_fg = readable_on(light_bg)
+
+    dark_bg = darken(light_bg, 0.78)
+    dark_fg = lighten(light_fg, 0.72)
+    if contrast_ratio(parse_hex(dark_fg), parse_hex(dark_bg)) < 4.5:
+        dark_fg = readable_on(dark_bg)
+
+    return {
+        "light_fg": light_fg,
+        "light_bg": light_bg,
+        "dark_fg": dark_fg,
+        "dark_bg": dark_bg,
+    }

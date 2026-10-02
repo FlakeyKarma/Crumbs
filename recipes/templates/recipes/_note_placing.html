@@ -1,0 +1,27 @@
+{% comment %}
+The toolbar shown while a note is being positioned. The arrows are the
+keyboard-and-thumb route to the same thing the drag does — a rotate you can
+only reach by dragging is a rotate half the people using this cannot do.
+{% endcomment %}
+<div class="placing" data-placing-note="{{ placing_note.pk }}"
+     data-place-url="{% url 'recipes:note-place' placing_note.pk %}"
+     data-rotation="{{ placing_note.rotation }}">
+  {% csrf_token %}
+  <p class="placing__what">
+    Placing <strong>{{ placing_note.summary }}</strong>
+    <span class="placing__where">
+      {% if placing_note.anchor_step %}on step {{ placing_note.anchor_step.position|add:1 }}
+      {% else %}on the recipe{% endif %}
+    </span>
+  </p>
+
+  <p class="placing__hint">Drag it where you want it, or use the arrow keys.</p>
+
+  <div class="placing__controls">
+    <button class="btn" type="button" data-rotate="-15" aria-label="Turn left 15 degrees">&#8634;</button>
+    <span class="placing__angle" data-angle-readout aria-live="polite">{{ placing_note.rotation }}&deg;</span>
+    <button class="btn" type="button" data-rotate="15" aria-label="Turn right 15 degrees">&#8635;</button>
+    <button class="btn btn--quiet" type="button" data-rotate="reset">Upright</button>
+    <button class="btn btn--primary" type="button" data-placing-done>Done</button>
+  </div>
+</div>

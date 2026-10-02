@@ -1,0 +1,28 @@
+{% comment %}
+The full frozen breakdown of one logged entry. Only groups with something
+recorded are drawn, and the count says how much of each group is known —
+a blank vitamin is nobody having said, not a zero.
+{% endcomment %}
+<details class="breakdown">
+  <summary>What was in it</summary>
+  {% for group in entry.nutrition_table %}
+    {% if group.recorded %}
+      <h4 class="nutrient-group__heading">{{ group.label }}</h4>
+      <dl class="nutrients">
+        {% for row in group.recorded %}
+          <div class="nutrients__row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value|floatformat:"-2" }} {{ row.unit }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+      {% if group.recorded|length < group.rows|length %}
+        <p class="field__help">
+          {{ group.recorded|length }} of {{ group.rows|length }} recorded for this food.
+        </p>
+      {% endif %}
+    {% endif %}
+  {% empty %}
+    <p class="field__help">Nothing was recorded for this food.</p>
+  {% endfor %}
+</details>

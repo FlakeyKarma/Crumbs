@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static pantry_extras %}
+{% block title %}Find a food — {{ site.site_name }}{% endblock %}
+{% block content %}
+  <h1>Find a food</h1>
+
+  <form method="get" class="button-row" style="margin-bottom: 1.5rem">
+    <input type="search" name="q" value="{{ term }}" placeholder="rolled oats" aria-label="Product name">
+    <input type="search" name="company" value="{{ company }}" placeholder="or a company" aria-label="Company">
+    <input type="text" name="barcode" value="{{ barcode }}" placeholder="or a barcode" aria-label="Barcode">
+    <button class="btn" type="submit">Search here</button>
+    <button class="btn btn--quiet" type="submit" name="external" value="1">Search USDA and Open Food Facts</button>
+  </form>
+
+  <form method="get" class="pagesize">
+    <input type="hidden" name="q" value="{{ term }}">
+    <input type="hidden" name="company" value="{{ company }}">
+    <input type="hidden" name="barcode" value="{{ barcode }}">
+    {% if searched_externally %}<input type="hidden" name="external" value="1">{% endif %}
+    <label for="per-page">Show</label>
+    <select id="per-page" name="per_page" data-submit-on-change>
+      {% for size in page_sizes %}
+        <option value="{{ size }}" {% if size == per_page %}selected{% endif %}>{{ size }}</option>
+      {% endfor %}
+    </select>
+    <span>at a time</span>
+    <button class="btn btn--quiet" type="submit" data-submit-fallback>Apply</button>
+  </form>
+
+  <p class="field__help">
+    Your own catalogue is searched first — most lookups are for something
+    already imported, and the open sources shouldn't be hit on every keystroke.
+  </p>
+
+  {% if companies %}
+    <h2 class="legend-like">Companies</h2>
+    <p class="field__help">
+      Matched regardless of case, and folded together where the same company
+      was spelled differently by different sources. Pick one to see only its
+      products.
+    </p>
+    <ul class="chips">
+      {% for maker in companies %}
+        <li>
+          <a class="chip" href="?company={{ maker.name|urlencode }}"
+             {% if maker.name|lower == company|lower %}aria-current="page"{% endif %}>
+            {{ maker.name }} <span class="chip__count">{{ maker.count }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if local %}
+    <h2 class="legend-like">
+      {% if company %}From {{ company }}{% else %}Already here{% endif %}
+    </h2>
+    <div class="table-scroll">
+      <table class="datatable" data-resizable data-table-key="pantry-local">
+        <caption>In your catalogue. Every figure is per 100 g.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Source</th>
+            <th scope="col">Company</th>
+            <th scope="col">Product</th>
+            <th scope="col" class="datatable__num">Calories</th>
+            <th scope="col" class="datatable__num">Protein</th>
+            <th scope="col" class="datatable__num">Carbohydrates</th>
+            <th scope="col" class="datatable__num">Fats</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in local %}
+            <tr>
+              <td>{{ entry.source_api }}</td>
+              {% include "pantry/_food_cells.html" with food=entry url=entry.get_absolute_url %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "pantry/_pager.html" with page=local_page param="page" label="Catalogue results" %}
+  {% endif %}
+
+  {% if searched_externally %}
+    <h2 class="legend-like">From the open sources</h2>
+    {% for problem in errors %}
+      <div class="nonfield-errors">
+        {% if problem.error == "missing_key" %}
+          No {{ problem.api }} key yet, so that source was skipped —
+          <a href="{% url 'pantry:credentials' %}">add one</a>. Open Food Facts needs none.
+        {% else %}{{ problem.api }}: {{ problem.error }}{% endif %}
+      </div>
+    {% endfor %}
+
+    {% if clusters %}
+      <form method="post" action="{% url 'pantry:import' %}">
+        {% csrf_token %}
+        {# Carried so importing returns to this same search rather than a blank page. #}
+        <input type="hidden" name="q" value="{{ term }}">
+        <input type="hidden" name="company" value="{{ company }}">
+        <input type="hidden" name="barcode" value="{{ barcode }}">
+        <input type="hidden" name="external" value="1">
+
+        <div class="table-scroll">
+          <table class="datatable" data-resizable data-table-key="pantry-external">
+            <caption>
+              Not imported yet. Every figure is per 100 g, as the source gave it.
+              Tick several to bring them all in at once.
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col" class="datatable__tick">
+                  <input type="checkbox" data-select-all
+                         aria-label="Select every result">
+                </th>
+                <th scope="col">Source</th>
+                <th scope="col">Company</th>
+                <th scope="col">Product</th>
+                <th scope="col" class="datatable__num">Calories</th>
+                <th scope="col" class="datatable__num">Protein</th>
+                <th scope="col" class="datatable__num">Carbohydrates</th>
+                <th scope="col" class="datatable__num">Fats</th>
+                <th scope="col"><span class="skip-link">Import</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for group in clusters %}
+                <tr>
+                  <td class="datatable__tick">
+                    <input type="checkbox" name="selected"
+                           value="{{ group.lead.source_api }}:{{ group.lead.external_id }}"
+                           aria-label="Select {{ group.lead.name }}">
+                  </td>
+                  <td>{% if group.duplicate %}both{% else %}{{ group.lead.source_api }}{% endif %}</td>
+                  {% include "pantry/_food_cells.html" with food=group.lead %}
+                  <td class="datatable__actions">
+                    {% for option in group.members %}
+                      {% comment %}
+                        `only` beats the ticked boxes, so one row's button
+                        imports one row even mid-selection.
+                      {% endcomment %}
+                      <button class="btn btn--quiet" type="submit" name="only"
+                              value="{{ option.source_api }}:{{ option.external_id }}">
+                        Import{% if group.duplicate %} from {{ option.source_api }}{% endif %}
+                      </button>
+                    {% endfor %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% include "pantry/_pager.html" with page=cluster_page param="xpage" label="Open source results" %}
+
+        <div class="button-row" data-import-cap="{{ import_cap }}">
+          <button class="btn btn--primary" type="submit">Import selected</button>
+          <span class="field__help" data-selection-count aria-live="polite"></span>
+        </div>
+      </form>
+    {% else %}
+      <p class="field__help">Nothing came back.</p>
+    {% endif %}
+  {% endif %}
+
+  <p class="button-row">
+    <a class="btn" href="{% url 'pantry:entry-create' %}">Neither has it — enter it by hand</a>
+  </p>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/tables.js' %}" defer></script>
+{% endblock %}

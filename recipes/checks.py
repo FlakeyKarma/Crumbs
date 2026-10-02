@@ -1,4 +1,9 @@
-"""System checks for the theme settings.
+"""System checks.
+
+Project-wide, not just this app's: they live here because recipes is the
+root app and the one guaranteed to be installed.
+
+Theme settings first, then the migration check.
 
 Theme profiles are hand-edited dictionaries, so a typo is likely and its
 symptom — one button quietly reverting to the fallback red — is easy to miss.
@@ -91,3 +96,52 @@ def check_themes(app_configs, **kwargs):
         )
 
     return problems
+
+
+@register()
+def check_migrations_match_models(app_configs, **kwargs):
+    """Warn when a model has changed and no migration says so.
+
+    No migration files are committed — the first run generates them — which
+    means pulling a new version with new fields leaves the database a
+    version behind. Without this, the symptom is `no such column:
+    pantry_foodentry.trans_fat_g` thrown at whoever next opens the page,
+    which says nothing about what to do.
+
+    A Warning rather than an Error on purpose: checks run before
+    `makemigrations` too, and an Error there would refuse to run the very
+    command that fixes it.
+    """
+    from django.apps import apps
+    from django.db.migrations.autodetector import MigrationAutodetector
+    from django.db.migrations.loader import MigrationLoader
+    from django.db.migrations.questioner import NonInteractiveMigrationQuestioner
+    from django.db.migrations.state import ProjectState
+
+    try:
+        # connection=None reads the migration files off disk and never
+        # touches the database, so this is safe before the first migrate.
+        loader = MigrationLoader(None, ignore_no_migrations=True)
+        autodetector = MigrationAutodetector(
+            loader.project_state(),
+            ProjectState.from_apps(apps),
+            NonInteractiveMigrationQuestioner(specified_apps=set(), dry_run=True),
+        )
+        changes = autodetector.changes(graph=loader.graph)
+    except Exception:
+        # A broken migration graph is its own problem and Django reports it
+        # far better than this would.
+        return []
+
+    if not changes:
+        return []
+
+    return [
+        Warning(
+            "These apps have model changes with no migration: "
+            + ", ".join(sorted(changes))
+            + ".",
+            hint="Run `make migrate` (or `manage.py makemigrations && manage.py migrate`).",
+            id="recipes.W002",
+        )
+    ]

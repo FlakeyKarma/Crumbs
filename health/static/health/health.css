@@ -1,0 +1,257 @@
+/* The Health Panel.
+ *
+ * Scoped to this app and built on the site's own tokens, so it inherits
+ * whichever of the seven themes is active rather than fighting it. No
+ * colours are defined here that aren't already in the palette.
+ *
+ * Bars, not rings. A ring can only express "percentage of one number", and
+ * three of the four target shapes aren't that: "at most 2300 mg" and
+ * "between 120 and 180 g" both need a band with two ends. One grammar for
+ * all four beats a ring plus three exceptions.
+ */
+
+.measures {
+  list-style: none;
+  margin: 0 0 2rem;
+  padding: 0;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.measure__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.measure__name {
+  font-weight: 500;
+}
+
+.measure__value {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.15rem;
+}
+
+.measure__unit {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.measure__track {
+  position: relative;
+  height: 0.7rem;
+  background: var(--surface-2, var(--surface));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* The acceptable band. Shading where you're trying to land expresses a floor,
+   a ceiling and a range in the same picture. */
+.measure__band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--jam) 18%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--jam) 45%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--jam) 45%, transparent);
+}
+
+.measure__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--jam);
+  opacity: 0.85;
+}
+
+/* State colours the figure, not the bar: an amber bar on an amber-timer theme
+   would be saying two different things with one colour. */
+.measure[data-state="over"] .measure__value,
+.measure[data-state="under"] .measure__value {
+  color: var(--amber);
+}
+
+.measure[data-state="over"] .measure__fill {
+  background: var(--amber);
+}
+
+.measure[data-state="unknown"] .measure__value {
+  color: var(--ink-soft);
+}
+
+.measure__note {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.measures-all summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+  margin-bottom: 1rem;
+}
+
+/* --- The day's food ----------------------------------------------------- */
+
+.foodlog {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.foodlog__row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto auto;
+  gap: 0 0.9rem;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+.foodlog__row form {
+  display: inline;
+}
+
+.foodlog__slot {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.foodlog__amount {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.foodlog__flag {
+  font-size: 0.75rem;
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  border-radius: 999px;
+  padding: 0 0.45rem;
+}
+
+.foodlog__energy {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 40rem) {
+  .foodlog__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .foodlog__slot {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- Leftovers ---------------------------------------------------------- */
+
+.leftovers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leftovers li {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+.leftovers__when {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.leftovers__when.is-urgent {
+  color: var(--amber);
+}
+
+/* --- Grouped measures --------------------------------------------------- */
+/*
+ * Twenty-seven nutrients in one list is unreadable, so the panel groups them
+ * the way a food's page does. A measure with a target stays out in the open;
+ * the rest fold away but keep counting.
+ */
+
+.measure-group {
+  margin-top: 2rem;
+}
+
+.measure-group .legend-like {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.measure-group__count {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.foodlog__thumb {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  display: inline-block;
+}
+
+.breakdown {
+  grid-column: 1 / -1;
+  margin-top: 0.4rem;
+}
+
+.breakdown > summary {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.breakdown[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+/* --- Calories first, then collapsible groups ---------------------------- */
+
+.energy-bar {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--rule);
+}
+
+/* A <details> rather than a <section>: twenty-seven measures is a wall, and
+   the only one most people want open is the macros. */
+details.measure-group > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+details.measure-group > summary::-webkit-details-marker {
+  color: var(--ink-soft);
+}
+
+details.measure-group[open] > summary {
+  margin-bottom: 0.75rem;
+}

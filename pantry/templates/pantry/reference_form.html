@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ site.site_name }}{% endblock %}
+{% block sheet_class %}form-page{% endblock %}
+
+{% block content %}
+  <h1>{{ page_title }}</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "recipes/_field.html" with field=form.label %}
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">Save</button>
+      <a class="btn btn--quiet" href="{% url 'pantry:references' %}">Cancel</a>
+      <button class="btn btn--danger" type="submit" name="delete" value="1">Delete</button>
+    </div>
+  </form>
+
+  <h2 class="legend-like">Phrasings</h2>
+  {% if reference.patterns.all %}
+    <ul class="reference-entry__patterns">
+      {% for row in reference.patterns.all %}
+        <li>
+          <code>{{ row.pattern }}</code>
+          {% if row.is_regex %}<span class="picker__tag">regular expression</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="field__help">None, so nothing matches this term.</p>
+  {% endif %}
+  <p class="field__help">
+    Phrasings are added and removed on the
+    <a href="{% url 'pantry:references' %}#reference-{{ reference.pk }}">reference list</a>.
+  </p>
+
+  <p class="field__help">
+    Deleting a term also removes its phrasings and every reader's choice for
+    it. Recipes using the phrase go back to showing the words themselves.
+  </p>
+{% endblock %}

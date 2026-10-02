@@ -408,3 +408,161 @@
     box-shadow: none;
   }
 }
+
+/* --- The note palette --------------------------------------------------- */
+/*
+ * Fixed pairs of fill and ink rather than a colour picker. Six themes and
+ * two lighting modes means a hex chosen against pale chalk can vanish
+ * against near-black, and a note you cannot see is not a note. Each of
+ * these reads on both grounds; "accent" follows whatever theme is on.
+ */
+
+.note-icon,
+.note-paper {
+  --note-colour: var(--jam);
+  --note-ink: var(--on-primary);
+}
+
+[data-colour="tomato"] { --note-colour: #b8391f; --note-ink: #fff; }
+[data-colour="butter"] { --note-colour: #c98a06; --note-ink: #221a04; }
+[data-colour="basil"]  { --note-colour: #2f7a4f; --note-ink: #fff; }
+[data-colour="sky"]    { --note-colour: #1f6a9c; --note-ink: #fff; }
+[data-colour="berry"]  { --note-colour: #8c2f63; --note-ink: #fff; }
+[data-colour="slate"]  { --note-colour: #4a5a63; --note-ink: #fff; }
+
+.note-icon {
+  background: var(--note-colour);
+  color: var(--note-ink);
+}
+
+.note-paper[data-colour]:not([data-colour="accent"]) {
+  border-left: 4px solid var(--note-colour);
+}
+
+/* --- Writing one -------------------------------------------------------- */
+
+.note-dialog {
+  width: min(38rem, calc(100vw - 2rem));
+  max-height: min(85vh, 50rem);
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg, var(--radius));
+  background: var(--surface);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.note-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.note-dialog form {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+}
+
+.note-dialog__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.note-dialog__head h2 {
+  font-size: 1.3rem;
+}
+
+.note-dialog__body {
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.note-dialog__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--rule);
+  background: var(--surface-2, var(--surface));
+}
+
+/* --- Placing one -------------------------------------------------------- */
+
+.placing {
+  position: fixed;
+  z-index: 50;
+  left: 1rem;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  margin: 0 auto;
+  max-width: 34rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--jam);
+  border-radius: var(--radius-lg, var(--radius));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.placing__what {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.placing__where {
+  color: var(--ink-soft);
+}
+
+.placing__hint {
+  margin: 0.25rem 0 0.7rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.placing[data-failed="true"] .placing__hint {
+  color: var(--jam);
+}
+
+.placing__controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.placing__angle {
+  font-variant-numeric: tabular-nums;
+  min-width: 3.5rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+/* The note being placed: grabbable, and obvious which one it is. */
+.note-icon[data-placing="true"] {
+  cursor: grab;
+  touch-action: none;
+  animation: none;
+  outline: 2px dashed var(--jam);
+  outline-offset: 4px;
+}
+
+.note-icon[data-placing="true"][data-dragging="true"] {
+  cursor: grabbing;
+}
+
+/* Its anchor, so you can see the box the percentages are measured against —
+   without it you are dragging inside an invisible rectangle. */
+.note-anchor:has(.note-icon[data-placing="true"]) {
+  outline: 1px dashed var(--rule-strong, var(--rule));
+  outline-offset: 2px;
+  min-height: 4rem;
+}
+
+@media print {
+  .placing,
+  .note-dialog {
+    display: none !important;
+  }
+}

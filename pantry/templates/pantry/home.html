@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}The Pantry — {{ site.site_name }}{% endblock %}
+{% block content %}
+  <div class="index-head">
+    <div>
+      <h1>The Pantry</h1>
+      <p>{{ totals|length }} food{{ totals|length|pluralize }} in, across {{ lots|length }} lot{{ lots|length|pluralize }}.</p>
+    </div>
+    <nav class="sorts">
+      <a href="{% url 'pantry:cook' %}">What can I cook?</a>
+      <a href="{% url 'pantry:search' %}">Find a food</a>
+      <a href="{% url 'pantry:references' %}">References</a>
+      <a href="{% url 'pantry:credentials' %}">Sources</a>
+    </nav>
+  </div>
+
+  {% if expiring %}
+    <section aria-labelledby="expiring-heading">
+      <h2 class="legend-like" id="expiring-heading">Use these up</h2>
+      <ul class="leftovers">
+        {% for lot in expiring %}
+          <li>
+            <a href="{{ lot.entry.get_absolute_url }}">{{ lot.entry }}</a>
+            <span>{{ lot.quantity_g|floatformat:0 }} g</span>
+            <span class="leftovers__when {% if lot.days_left <= 1 %}is-urgent{% endif %}">
+              {{ lot.expires_on|date:"j M" }}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section aria-labelledby="stock-heading">
+    <h2 class="legend-like" id="stock-heading">On hand</h2>
+    {% if totals %}
+      <ul class="foodlog">
+        {% for row in totals %}
+          <li class="foodlog__row">
+            <span class="foodlog__slot"></span>
+            <span class="foodlog__what">
+              <a href="{% url 'pantry:entry' row.entry__id %}">{{ row.entry__name }}</a>
+              {% if row.entry__brand %}<span class="foodlog__amount">{{ row.entry__brand }}</span>{% endif %}
+            </span>
+            <span class="foodlog__energy">{{ row.grams|floatformat:0 }} g</span>
+            <span></span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty">
+        <h2>Nothing in yet</h2>
+        <p>Find a food and put some away — then the recipe list can tell you what you can actually make.</p>
+        <p><a class="btn btn--primary" href="{% url 'pantry:search' %}">Find a food</a></p>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

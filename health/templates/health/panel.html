@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static health_extras %}
+
+{% block title %}Health Panel — {{ site.site_name }}{% endblock %}
+
+{% block head_extra %}<link rel="stylesheet" href="{% static 'health/health.css' %}">{% endblock %}
+
+{% block content %}
+  <div class="index-head">
+    <div>
+      <h1>Health Panel</h1>
+      <p>
+        {% if is_today %}Today{% else %}{{ day|date:"l j F" }}{% endif %}
+        {% if incomplete %}
+          — some of today's figures are a floor, because an ingredient couldn't be converted.
+        {% endif %}
+      </p>
+    </div>
+    <nav class="sorts" aria-label="Day">
+      <a href="?day={{ previous_day|date:'Y-m-d' }}">Previous</a>
+      {% if not is_today %}<a href="{% url 'health:panel' %}">Today</a>{% endif %}
+      {% if not is_today %}<a href="?day={{ next_day|date:'Y-m-d' }}">Next</a>{% endif %}
+    </nav>
+  </div>
+
+  {% if energy_row %}
+    {% comment %}
+      Calories first and on their own. Every macro below is a share of this
+      number, so showing it among them reads backwards.
+    {% endcomment %}
+    <section class="energy-bar" aria-labelledby="energy-heading">
+      <h2 class="legend-like" id="energy-heading">
+        Calories
+        {% if energy_row.note %}<span class="measure-group__count">{{ energy_row.note }}</span>{% endif %}
+      </h2>
+      <ul class="measures">
+        {% include "health/_measure.html" with row=energy_row %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section aria-labelledby="pinned-heading">
+    <h2 class="legend-like" id="pinned-heading">Where you are</h2>
+    <ul class="measures">
+      {% for row in pinned %}
+        {% if row.metric.slug != "energy" %}
+          {% include "health/_measure.html" with row=row %}
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% for group in groups %}
+    {% comment %}
+      The whole group folds now, not just its untargeted half. Macros open,
+      because that is the group anyone came to look at; minerals and
+      vitamins closed, because twenty-seven measures is a wall.
+    {% endcomment %}
+    <details class="measure-group" {% if group.tracked or forloop.first %}open{% endif %}>
+      <summary class="legend-like">
+        {{ group.label }}
+        <span class="measure-group__count">
+          {{ group.recorded|length }} of {{ group.rows|length }} recorded today
+        </span>
+      </summary>
+
+      {% if group.tracked %}
+        <ul class="measures">
+          {% for row in group.tracked %}{% include "health/_measure.html" with row=row %}{% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if group.untracked %}
+        {% comment %}
+          Folded, not dropped. Something you have not set a target for is
+          still being totalled, and the moment you wonder about your iron
+          you want to find it rather than be told to go and configure it.
+        {% endcomment %}
+        <details class="measures-all">
+          <summary>
+            {% if group.tracked %}The rest of the{% else %}All{% endif %}
+            {{ group.label|lower }} ({{ group.untracked|length }})
+          </summary>
+          <ul class="measures">
+            {% for row in group.untracked %}{% include "health/_measure.html" with row=row %}{% endfor %}
+          </ul>
+        </details>
+      {% endif %}
+    </details>
+  {% endfor %}
+
+  <section aria-labelledby="log-heading">
+    <h2 class="legend-like" id="log-heading">What you ate</h2>
+    {% if entries %}
+      <ul class="foodlog">
+        {% for entry in entries %}
+          <li class="foodlog__row">
+            <span class="foodlog__slot">{{ entry.get_slot_display }}</span>
+            <span class="foodlog__what">
+              {% if entry.entry.image %}
+                <img class="foodlog__thumb" src="{{ entry.entry.image.url }}" alt="" loading="lazy">
+              {% endif %}
+              {{ entry }}
+              {% if entry.servings %}<span class="foodlog__amount">× {{ entry.servings|floatformat:"-2" }}</span>
+              {% elif entry.grams %}<span class="foodlog__amount">{{ entry.grams|floatformat:0 }} g</span>{% endif %}
+              {% if entry.incomplete %}<span class="foodlog__flag" title="An ingredient couldn't be converted">partial</span>{% endif %}
+            </span>
+            <span class="foodlog__energy">{{ entry|nutrient:"energy_kcal"|floatformat:0 }} kcal</span>
+            {% include "health/_nutrition_breakdown.html" with entry=entry %}
+            <form method="post" action="{% url 'health:delete-entry' entry.pk %}">
+              {% csrf_token %}
+              <button class="btn btn--quiet" type="submit">Remove</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="field__help">Nothing logged for this day yet.</p>
+    {% endif %}
+
+    <p class="button-row">
+      <a class="btn btn--primary" href="{% url 'recipes:list' %}">Log a recipe</a>
+      <a class="btn" href="{% url 'health:add-observation' %}">Record a reading</a>
+      <a class="btn btn--quiet" href="{% url 'health:plan' %}">Calories and macros</a>
+      <a class="btn btn--quiet" href="{% url 'health:targets' %}">Targets</a>
+      <a class="btn btn--quiet" href="{% url 'health:preferences' %}">Panel settings</a>
+    </p>
+  </section>
+
+  {% if leftovers %}
+    <section aria-labelledby="leftovers-heading">
+      <h2 class="legend-like" id="leftovers-heading">Eat this first</h2>
+      <ul class="leftovers">
+        {% for lot in leftovers %}
+          <li>
+            <a href="{{ lot.entry.get_absolute_url }}">{{ lot.entry }}</a>
+            <span>{{ lot.quantity_g|floatformat:0 }} g</span>
+            <span class="leftovers__when {% if lot.days_left <= 1 %}is-urgent{% endif %}">
+              {% if lot.days_left < 0 %}{{ lot.days_left|cut:"-" }} days past
+              {% elif lot.days_left == 0 %}today
+              {% else %}{{ lot.days_left }} day{{ lot.days_left|pluralize }}{% endif %}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+{% endblock %}

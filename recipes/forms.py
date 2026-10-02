@@ -283,6 +283,7 @@ class NoteForm(forms.ModelForm):
             "visibility",
             "size",
             "icon",
+            "colour",
             "offset_x",
             "offset_y",
             "rotation",
@@ -300,6 +301,7 @@ class NoteForm(forms.ModelForm):
         }
         labels = {
             "body": "What does it say?",
+            "colour": "Colour",
             "image": "A picture, if it's easier to show than to say",
             "anchor_step": "Attach to",
             "visibility": "Who can read it",

@@ -1,5 +1,7 @@
 Django>=5.2,<6.1
-Pillow>=10.0          # ImageField needs it; drop both if you never add photos
+Pillow>=10.0          # ImageField needs it; drop if you never add photos
+requests>=2.31        # pantry: FoodData Central and Open Food Facts lookups
+cryptography>=42.0    # pantry: encrypts each user's own FDC key at rest
 
 # Useful once this leaves your laptop:
 # gunicorn>=22.0

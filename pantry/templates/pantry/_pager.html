@@ -1,0 +1,24 @@
+{% load pantry_extras %}
+{% comment %}
+One list's pager. `param` names its page number so the two lists on the
+search page can be turned independently.
+{% endcomment %}
+{% if page.paginator.num_pages > 1 %}
+  <nav class="pager" aria-label="{{ label }}">
+    {% if page.has_previous %}
+      <a href="{% page_url param page.previous_page_number %}" rel="prev">Previous</a>
+    {% else %}
+      <span class="pager__spent">Previous</span>
+    {% endif %}
+
+    <span>
+      {{ page.start_index }}&ndash;{{ page.end_index }} of {{ page.paginator.count }}
+    </span>
+
+    {% if page.has_next %}
+      <a href="{% page_url param page.next_page_number %}" rel="next">Next</a>
+    {% else %}
+      <span class="pager__spent">Next</span>
+    {% endif %}
+  </nav>
+{% endif %}

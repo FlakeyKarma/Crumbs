@@ -1170,3 +1170,848 @@ input[type="color"] {
   min-height: 3rem;
   margin-top: 0.75rem;
 }
+
+/* --- Data tables -------------------------------------------------------- */
+/*
+ * Seven columns of mostly-numbers. Rules rather than zebra striping: the rows
+ * are short, and striping paints half the table a colour that has to work in
+ * six themes. Everything here reads from the token set, so it inherits
+ * whichever palette is on.
+ */
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 0.75rem 0 1.75rem;
+  /* A scrollable region is focusable so a keyboard can reach the overflow. */
+  scrollbar-gutter: stable;
+}
+
+.datatable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+  /* Numbers in a column have to line up to be comparable at a glance. */
+  font-variant-numeric: tabular-nums;
+}
+
+.datatable caption {
+  caption-side: top;
+  text-align: left;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  padding-bottom: 0.5rem;
+}
+
+.datatable th,
+.datatable td {
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: baseline;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+  white-space: nowrap;
+}
+
+.datatable thead th {
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.datatable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.datatable__num {
+  text-align: right;
+}
+
+/* The product name is the one column allowed to wrap and to take the slack,
+   because it is the only one whose length is unbounded. */
+.datatable__wide {
+  white-space: normal;
+  min-width: 14rem;
+  width: 60%;
+}
+
+.datatable__actions {
+  text-align: right;
+}
+
+.datatable__actions form {
+  display: inline;
+}
+
+.datatable td:first-child {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+@media print {
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  .datatable__actions {
+    display: none;
+  }
+}
+
+/* --- The timer dock ----------------------------------------------------- */
+/*
+ * Pinned to every page, because a timer you started on a recipe has to follow
+ * you to the shopping list. Bottom-right on a desktop, full width along the
+ * bottom of a phone where the thumb already is — and clear of the home
+ * indicator, hence the safe-area inset.
+ */
+
+.timer-dock {
+  position: fixed;
+  z-index: 60;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+}
+
+.timer-dock[hidden] {
+  display: none;
+}
+
+.timer-dock__pill {
+  font: inherit;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.timer-dock__pill::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--amber);
+  vertical-align: baseline;
+}
+
+/* Finished is the one state that should catch your eye across a kitchen. */
+.timer-dock__pill[data-done="true"] {
+  border-color: var(--jam);
+  color: var(--jam);
+}
+
+.timer-dock__pill[data-done="true"]::before {
+  background: var(--jam);
+  animation: note-pulse 1.4s ease-in-out infinite;
+}
+
+.timer-dock__panel {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.timer-dock__panel[hidden] {
+  display: none;
+}
+
+.timer-row {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+.timer-row:last-child {
+  border-bottom: 0;
+}
+
+.timer-row__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.timer-row__detail {
+  margin: 0.15rem 0 0.6rem;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-row[data-done="true"] .timer-row__detail {
+  color: var(--jam);
+}
+
+.timer-row__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 34rem) {
+  .timer-dock {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+    align-items: stretch;
+  }
+}
+
+/* Cook mode already dims everything that isn't a step; the dock is the
+   exception, since that is when a timer matters most. */
+body.cook-mode .timer-dock {
+  font-size: 1.05rem;
+}
+
+@media print {
+  .timer-dock {
+    display: none !important;
+  }
+}
+
+/* --- Resizable columns and batch selection ------------------------------ */
+
+.datatable th {
+  position: relative;
+}
+
+/* Fixed layout is set by tables.js, so a narrowed column has to clip rather
+   than push its neighbours around. The Product column wraps instead, which
+   is why it is exempt. */
+.datatable[style*="fixed"] td,
+.datatable[style*="fixed"] th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.datatable[style*="fixed"] .datatable__wide {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.col-resize {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  width: 9px;
+  cursor: col-resize;
+  /* The grabbable area is wider than the line it draws — 9px is about the
+     narrowest a pointer can reliably hit, and the line should stay hairline. */
+  background: transparent;
+  touch-action: none;
+  z-index: 1;
+}
+
+.col-resize::after {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 4px;
+  width: 1px;
+  background: var(--rule);
+}
+
+.col-resize:hover::after,
+.col-resize:focus-visible::after,
+.col-resize[data-dragging="true"]::after {
+  background: var(--jam);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+
+.col-resize:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.table-reset {
+  margin-left: 0.75rem;
+  font-size: 0.8rem;
+  padding-block: 0;
+}
+
+.datatable__tick {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.datatable__tick input {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+@media print {
+  .col-resize,
+  .table-reset,
+  .datatable__tick {
+    display: none !important;
+  }
+}
+
+/* --- Page size and spent pager arms ------------------------------------- */
+
+.pagesize {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.75rem;
+}
+
+.pagesize select {
+  width: auto;
+  padding-block: 0.25rem;
+}
+
+/* An unavailable Previous/Next stays in place rather than disappearing, so
+   the pager doesn't shuffle sideways as you move through the pages. */
+.pager__spent {
+  color: var(--ink-soft);
+  opacity: 0.45;
+}
+
+[data-selection-count][data-over="true"] {
+  color: var(--jam);
+}
+
+/* --- Nutrition panels --------------------------------------------------- */
+
+.food-photo {
+  max-width: min(22rem, 100%);
+  border-radius: var(--radius-lg, var(--radius));
+  margin: 1rem 0;
+}
+
+/* Minerals and vitamins are folded away on the form: a packet rarely lists
+   them, and twenty-seven open inputs is a wall. <details> because it needs
+   no JavaScript and the browser handles the keyboard. */
+.nutrient-group {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0 1rem;
+  margin-bottom: 2.25rem;
+}
+
+.nutrient-group > summary {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  padding: 0.75rem 0;
+  cursor: pointer;
+}
+
+.nutrient-group[open] > summary {
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1rem;
+}
+
+.nutrient-group__heading {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.nutrients {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0 1.5rem;
+}
+
+.nutrients__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+.nutrients dt {
+  color: var(--ink-soft);
+}
+
+.nutrients dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- Reference highlights ----------------------------------------------- */
+/*
+ * `**lean beef**` in a recipe. A button, because it does something — but one
+ * that has to sit inside a sentence without breaking it, so it inherits the
+ * surrounding type and only the colours change.
+ */
+
+.reference {
+  font: inherit;
+  color: var(--reference-fg);
+  background: var(--reference-bg);
+  border: 0;
+  border-radius: 3px;
+  padding: 0.05em 0.3em;
+  margin: 0 -0.05em;
+  cursor: pointer;
+  /* Dotted, not solid: it marks a word as fillable without looking like a
+     link, which it is not. */
+  border-bottom: 1px dotted currentColor;
+}
+
+.reference:hover,
+.reference:focus-visible {
+  border-bottom-style: solid;
+}
+
+/* Already chosen: the word shown is the food, so the dots come off. */
+.reference[data-bound="true"] {
+  border-bottom-style: none;
+  font-weight: 500;
+}
+
+.reference[data-bound="true"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-left: 0.35em;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 0.15em;
+  opacity: 0.6;
+}
+
+@media print {
+  .reference {
+    background: transparent;
+    border-bottom: 1px dotted #000;
+    color: inherit;
+  }
+}
+
+/* --- Pickers ------------------------------------------------------------ */
+
+.btn--add {
+  font-size: 1.3rem;
+  line-height: 1;
+  width: 2.4rem;
+  padding: 0;
+  justify-content: center;
+  border-color: var(--jam);
+  color: var(--jam);
+}
+
+.picker {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: min(80vh, 42rem);
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg, var(--radius));
+  background: var(--surface);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.picker::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.picker__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.picker__head h2 {
+  font-size: 1.2rem;
+}
+
+.picker__body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.picker__actions {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--rule);
+  background: var(--surface-2, var(--surface));
+}
+
+.picker__results {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.picker__result {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+  padding: 0.6rem 0.4rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.picker__result:hover,
+.picker__result:focus-visible {
+  background: var(--surface-2, var(--surface));
+  color: var(--jam);
+}
+
+.picker__note,
+.picker__tag {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* A name that exists in the catalogue but not yet in the recipe vocabulary:
+   picking it is how it gets there. */
+.picker__tag {
+  color: var(--amber);
+}
+
+.picker__miss {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* --- Backup and restore -------------------------------------------------- */
+/*
+ * Side by side, but visibly not the same kind of thing: one downloads a
+ * file and changes nothing, the other can lose work. The restore half is
+ * bordered in the accent so it never reads as the safe default.
+ */
+
+.backup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+  margin: 1rem 0 1.5rem;
+}
+
+.backup h3 {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  margin: 0 0 0.4rem;
+}
+
+.backup form {
+  padding: 1rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.backup__restore {
+  border-color: var(--jam);
+}
+
+.backup__restore legend {
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0;
+}
+
+.backup__restore fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.1rem;
+}
+
+.backup__restore .field--inline {
+  align-items: flex-start;
+  margin-bottom: 0.35rem;
+  font-weight: 400;
+}
+
+.backup__restore input[type="file"] {
+  font-size: 0.9rem;
+}
+
+/* --- The reference library ---------------------------------------------- */
+
+.reference-search {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  max-width: 32rem;
+}
+
+.reference-list {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.reference-entry {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+}
+
+.reference-entry__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.reference-entry__head h2 {
+  font-size: 1.2rem;
+}
+
+.reference-entry__label {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  margin: 1.1rem 0 0.4rem;
+}
+
+.reference-entry__patterns,
+.reference-entry__foods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reference-entry__patterns li,
+.reference-entry__foods li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+.reference-entry__patterns code {
+  font-size: 0.9rem;
+}
+
+.reference-entry__patterns form,
+.reference-entry__foods form {
+  margin: 0;
+}
+
+/* The "+" panel. A <details>, so it opens with no script. */
+.add-pattern {
+  margin: 0.75rem 0 0;
+}
+
+.add-pattern > summary {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--jam);
+  padding: 0.2rem 0;
+}
+
+.add-pattern[open] > summary {
+  margin-bottom: 0.6rem;
+}
+
+.add-pattern form {
+  border-left: 2px solid var(--rule);
+  padding-left: 1rem;
+  max-width: 28rem;
+}
+
+.add-pattern__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.reference-entry__add {
+  margin-top: 0.9rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.reference-entry__fallback {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.reference-entry__fallback[hidden] {
+  display: none;
+}
+
+.reference-entry__fallback select {
+  width: auto;
+  max-width: 22rem;
+}
+
+/* --- Editing a phrasing -------------------------------------------------- */
+
+.phrasing {
+  display: block;
+}
+
+.phrasing__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.phrasing__head code {
+  flex: 1 1 10rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.phrasing__edit > summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--jam);
+}
+
+/* The panel drops below the row rather than squeezing into it, so a long
+   phrasing and its edit box are never fighting for the same line. */
+.phrasing__edit[open] {
+  display: block;
+  width: 100%;
+}
+
+.phrasing__edit form {
+  border-left: 2px solid var(--rule);
+  padding: 0.6rem 0 0.2rem 1rem;
+  margin-top: 0.5rem;
+  max-width: 28rem;
+}
+
+/* --- Worked-out portions ------------------------------------------------- */
+
+.portions {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.portion {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}
+
+.portion__amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+/* A gap is not a failure — the choice is made, the amount just cannot be
+   worked out yet. It reads as a note, not an error. */
+.portion--gap .portion__amount {
+  color: var(--amber);
+  font-variant-numeric: normal;
+}
+
+/* --- The recipe's nutrition --------------------------------------------- */
+
+.nutrition-panel {
+  margin: 1.25rem 0 0;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+
+.nutrition-panel > summary {
+  cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* The headline on the closed panel: the one figure most people open it for,
+   so it does not need opening. */
+.nutrition-panel__headline {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.nutrition-panel__table {
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.nutrition-panel__table th[scope="row"] {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.nutrition-panel__energy th,
+.nutrition-panel__energy td {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nutrition-panel__group th {
+  padding-top: 0.9rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule);
+}
+
+.nutrition-panel__gaps {
+  list-style: none;
+  margin: 0.4rem 0 0.75rem;
+  padding: 0;
+}
+
+.nutrition-panel__gaps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--rule-soft, var(--rule));
+}

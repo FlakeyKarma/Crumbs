@@ -1,0 +1,54 @@
+{% comment %}
+Two search popups, both the same shape: type, get results, pick one.
+
+They are separate dialogs because they search different things for
+different reasons — the ingredient picker fills in a row on the editor, the
+food picker binds a reference to a food in the reader's own table — and
+folding them together would mean a dialog that behaves differently
+depending on who opened it.
+{% endcomment %}
+
+<dialog class="picker" id="ingredient-picker" aria-labelledby="ingredient-picker-title">
+  <div class="picker__head">
+    <h2 id="ingredient-picker-title">Add an ingredient</h2>
+    <button class="btn btn--quiet" type="button" data-picker-close aria-label="Close">&times;</button>
+  </div>
+  <div class="picker__body">
+    <label class="skip-link" for="ingredient-picker-q">Search ingredients</label>
+    <input type="search" id="ingredient-picker-q" data-picker-input
+           data-picker-url="{% url 'recipes:ingredient-search' %}"
+           placeholder="smoked paprika" autocomplete="off">
+    <p class="field__help" data-picker-status>Type at least two letters.</p>
+    <ul class="picker__results" data-picker-results></ul>
+  </div>
+</dialog>
+
+<dialog class="picker" id="food-picker" aria-labelledby="food-picker-title">
+  <div class="picker__head">
+    <h2 id="food-picker-title">Which food?</h2>
+    <button class="btn btn--quiet" type="button" data-picker-close aria-label="Close">&times;</button>
+  </div>
+  <div class="picker__body">
+    <p class="field__help">
+      Choosing here is yours alone — it does not change the recipe for anyone else.
+    </p>
+    <label class="skip-link" for="food-picker-q">Search foods</label>
+    <input type="search" id="food-picker-q" data-picker-input
+           data-picker-url="{% url 'recipes:food-search' %}"
+           placeholder="lean beef mince" autocomplete="off">
+    <p class="field__help" data-picker-status>Type at least two letters.</p>
+    <ul class="picker__results" data-picker-results></ul>
+    <p class="picker__create" data-picker-create hidden>
+      Nothing recognises “<span data-picker-phrase></span>” yet.
+      <button class="btn btn--quiet" type="button">Create a reference for it</button>
+    </p>
+
+    <p class="picker__miss">
+      Nothing suitable? <a href="{% url 'pantry:search' %}?external=1">Import one from the open sources</a>,
+      then come back.
+    </p>
+  </div>
+  <div class="picker__actions">
+    <button class="btn btn--quiet" type="button" data-picker-clear>Clear this reference</button>
+  </div>
+</dialog>

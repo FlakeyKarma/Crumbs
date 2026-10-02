@@ -43,6 +43,17 @@ _appearance_boot.html below. data-mode-pref keeps the reader's actual choice
   </style>
   {% endif %}
 
+  <style>
+    :root {
+      --reference-fg: {{ highlight.light_fg }};
+      --reference-bg: {{ highlight.light_bg }};
+    }
+    :root[data-mode="dark"] {
+      --reference-fg: {{ highlight.dark_fg }};
+      --reference-bg: {{ highlight.dark_bg }};
+    }
+  </style>
+
   {% include "recipes/_appearance_boot.html" %}
 
   {% block head_extra %}{% endblock %}
@@ -65,6 +76,8 @@ _appearance_boot.html below. data-mode-pref keeps the reader's actual choice
         <a href="{% url 'recipes:tags' %}">Tags</a>
         {% include "recipes/_appearance_picker.html" %}
         {% if user.is_authenticated %}
+          <a href="{% url 'pantry:home' %}">Pantry</a>
+          <a href="{% url 'health:panel' %}">Health</a>
           <a href="{% url 'recipes:create' %}">Add a recipe</a>
           {% if user.is_staff %}<a href="{% url 'recipes:settings' %}">Settings</a>{% endif %}
           <form action="{% url 'logout' %}" method="post">
@@ -95,6 +108,8 @@ _appearance_boot.html below. data-mode-pref keeps the reader's actual choice
   </footer>
 
   <script src="{% static 'js/appearance.js' %}" defer></script>
+  {# Every page: a timer started on a recipe has to follow you off it. #}
+  <script src="{% static 'js/timers.js' %}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

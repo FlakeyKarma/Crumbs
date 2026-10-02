@@ -1,0 +1,43 @@
+{% load health_extras %}
+{% comment %}
+An included template gets a fresh tag library — {% load %} in panel.html does
+not reach in here — so this has to load health_extras for itself.
+
+One metric as a horizontal bar with the acceptable band shaded.
+
+A bar rather than a ring, because all four target shapes have to read in one
+visual grammar: "at least" shades from the floor rightwards, "at most" shades
+up to the ceiling, a range shades the middle, and track-only shades nothing.
+A ring can express a percentage of one number and nothing else.
+{% endcomment %}
+<li class="measure" data-state="{{ row.state }}">
+  <div class="measure__head">
+    <span class="measure__name">{{ row.metric.name }}</span>
+    <span class="measure__value">
+      {{ row.display }}{% if row.metric.unit %} <span class="measure__unit">{{ row.metric.unit }}</span>{% endif %}
+    </span>
+  </div>
+
+  <div class="measure__track" role="img"
+       aria-label="{{ row.metric.name }}: {{ row.display }}{{ row.metric.unit }}{% if row.target %}, target {{ row.target.describe }}{% endif %}">
+    {% if row.lower or row.upper %}
+      <span class="measure__band"
+            style="left: {% band_start row %}%; right: {% band_end row %}%"></span>
+    {% endif %}
+    {% if row.fraction is not None %}
+      <span class="measure__fill" style="width: {{ row.fraction|percentage }}%"></span>
+    {% endif %}
+  </div>
+
+  <p class="measure__note">
+    {% if row.planned %}
+      {# The plan decides this one, so a hand-set target would be a second
+         answer. Say where the figures came from and link to the plan. #}
+      <a href="{% url 'health:plan' %}">{{ row.note }}</a>
+    {% elif row.target %}
+      {{ row.target.describe }}{% if row.cadence == "weekly" %}, across the week{% endif %}
+    {% else %}
+      <a href="{% url 'health:set-target' row.metric.pk %}">Set a target</a>
+    {% endif %}
+  </p>
+</li>
